@@ -7,13 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		533B7C2E2D76DF1E00E25998 /* yapperApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533B7C2D2D76DF1E00E25998 /* yapperApp.swift */; };
+		533B7C2E2D76DF1E00E25998 /* YapperApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533B7C2D2D76DF1E00E25998 /* YapperApp.swift */; };
 		533B7C302D76DF1E00E25998 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533B7C2F2D76DF1E00E25998 /* ContentView.swift */; };
 		533B7C322D76DF2000E25998 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 533B7C312D76DF2000E25998 /* Assets.xcassets */; };
 		533B7C352D76DF2000E25998 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 533B7C342D76DF2000E25998 /* Preview Assets.xcassets */; };
 		533B7C3F2D76DF2000E25998 /* yapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533B7C3E2D76DF2000E25998 /* yapperTests.swift */; };
 		533B7C492D76DF2000E25998 /* yapperUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533B7C482D76DF2000E25998 /* yapperUITests.swift */; };
 		533B7C4B2D76DF2000E25998 /* yapperUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533B7C4A2D76DF2000E25998 /* yapperUITestsLaunchTests.swift */; };
+		533B7C582D76E08800E25998 /* FlashcardGameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533B7C572D76E08800E25998 /* FlashcardGameViewModel.swift */; };
+		533B7C5A2D76E09500E25998 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533B7C592D76E09500E25998 /* Models.swift */; };
+		533B7C5C2D76E0A000E25998 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533B7C5B2D76E0A000E25998 /* SettingsView.swift */; };
+		533B7C5E2D76E24500E25998 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533B7C5D2D76E24500E25998 /* Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,7 +39,7 @@
 
 /* Begin PBXFileReference section */
 		533B7C2A2D76DF1E00E25998 /* yapper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = yapper.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		533B7C2D2D76DF1E00E25998 /* yapperApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = yapperApp.swift; sourceTree = "<group>"; };
+		533B7C2D2D76DF1E00E25998 /* YapperApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YapperApp.swift; sourceTree = "<group>"; };
 		533B7C2F2D76DF1E00E25998 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		533B7C312D76DF2000E25998 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		533B7C342D76DF2000E25998 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -44,6 +48,11 @@
 		533B7C442D76DF2000E25998 /* yapperUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = yapperUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		533B7C482D76DF2000E25998 /* yapperUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = yapperUITests.swift; sourceTree = "<group>"; };
 		533B7C4A2D76DF2000E25998 /* yapperUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = yapperUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		533B7C572D76E08800E25998 /* FlashcardGameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlashcardGameViewModel.swift; sourceTree = "<group>"; };
+		533B7C592D76E09500E25998 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		533B7C5B2D76E0A000E25998 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		533B7C5D2D76E24500E25998 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		533B7C5F2D76E2F500E25998 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,9 +103,14 @@
 		533B7C2C2D76DF1E00E25998 /* yapper */ = {
 			isa = PBXGroup;
 			children = (
-				533B7C2D2D76DF1E00E25998 /* yapperApp.swift */,
+				533B7C2D2D76DF1E00E25998 /* YapperApp.swift */,
+				533B7C592D76E09500E25998 /* Models.swift */,
+				533B7C572D76E08800E25998 /* FlashcardGameViewModel.swift */,
+				533B7C5B2D76E0A000E25998 /* SettingsView.swift */,
 				533B7C2F2D76DF1E00E25998 /* ContentView.swift */,
+				533B7C5D2D76E24500E25998 /* Extensions.swift */,
 				533B7C312D76DF2000E25998 /* Assets.xcassets */,
+				533B7C5F2D76E2F500E25998 /* Info.plist */,
 				533B7C332D76DF2000E25998 /* Preview Content */,
 			);
 			path = yapper;
@@ -257,8 +271,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				533B7C5C2D76E0A000E25998 /* SettingsView.swift in Sources */,
+				533B7C5E2D76E24500E25998 /* Extensions.swift in Sources */,
 				533B7C302D76DF1E00E25998 /* ContentView.swift in Sources */,
-				533B7C2E2D76DF1E00E25998 /* yapperApp.swift in Sources */,
+				533B7C2E2D76DF1E00E25998 /* YapperApp.swift in Sources */,
+				533B7C582D76E08800E25998 /* FlashcardGameViewModel.swift in Sources */,
+				533B7C5A2D76E09500E25998 /* Models.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
