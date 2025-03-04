@@ -148,6 +148,14 @@ struct FlashcardView: View {
                     viewModel.toggleAnswer()
                 }
             }
+            .gesture(
+                DragGesture()
+                    .onEnded { value in
+                        if value.translation.width < 0 { // Swipe left (next card)
+                            viewModel.nextCard()
+                        }
+                    }
+            )
         }
     }
 }
