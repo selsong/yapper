@@ -56,23 +56,23 @@ struct ContentView: View {
                 }
             }
             .navigationBarTitle("Slang Flashcards", displayMode: .inline)
-            .navigationBarItems(
-                leading:
-                    Button(action: {
-                        showLogin = true
-                    }) {
-                        Image(systemName: "person.circle")
-                            .foregroundColor(.white)
-                    },
-                trailing:
-                    NavigationLink(destination: SettingsView()) {
-                        Image(systemName: "gear")
-                            .foregroundColor(.white)
-                    }
-            )
-            .sheet(isPresented: $showLogin) {
-                LoginView(isPresented: $showLogin, viewModel: viewModel)
-            }
+//            .navigationBarItems(
+//                leading:
+//                    Button(action: {
+//                        showLogin = true
+//                    }) {
+//                        Image(systemName: "person.circle")
+//                            .foregroundColor(.white)
+//                    },
+//                trailing:
+//                    NavigationLink(destination: SettingsView()) {
+//                        Image(systemName: "gear")
+//                            .foregroundColor(.white)
+//                    }
+//            )
+//            .sheet(isPresented: $showLogin) {
+//                LoginView(isPresented: $showLogin, viewModel: viewModel)
+//            }
         }
         .accentColor(.white)
         .preferredColorScheme(.dark)

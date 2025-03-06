@@ -1,78 +1,77 @@
 import SwiftUI
 
+@MainActor
+final class LoginViewModel: ObservableObject {
+    @Published var email = ""
+    @Published var password = ""
+    
+    @Published var errorMessage: String = ""
+    @Published var showError: Bool = false
+
+    func signIn() async {
+        guard !email.isEmpty, !password.isEmpty else {
+            self.errorMessage = "No email or password found."
+            self.showError = true
+            return
+        }
+        
+        do {
+            let returnedUserData = try await AuthManager.shared.createUser(email: email, password: password)
+            print("Success")
+            print(returnedUserData)
+            // Handle success logic here, e.g., navigate to a new view
+        } catch {
+            self.errorMessage = "Error: \(error)"
+            self.showError = true
+        }
+    }
+}
+
 struct LoginView: View {
-    @Binding var isPresented: Bool
-    @ObservedObject var viewModel: FlashcardGameViewModel
-    @State private var email: String = ""
-    @State private var password: String = ""
     @State private var isLogin: Bool = true
-    @State private var errorMessage: String = ""
-    @State private var showError: Bool = false
+    @State private var isPresented: Bool = false
+    @StateObject private var viewModel = LoginViewModel()
     
     var body: some View {
         ZStack {
             Color("BackgroundColor")
                 .edgesIgnoringSafeArea(.all)
             
-            VStack(spacing: 25) {
+            VStack(spacing: 55) {
                 Text("Yapper")
                     .font(.system(size: 40, weight: .bold))
                     .foregroundColor(.white)
                 
-                Image(systemName: "message.fill")
-                    .font(.system(size: 80))
-                    .foregroundColor(Color("AccentColor"))
-                    .padding(.bottom, 20)
-                
-                Text(isLogin ? "Login to Your Account" : "Create an Account")
+                Text(isLogin ? "Login" : "Create an Account")
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
                 
+                // Main Login Part
                 VStack(spacing: 15) {
-                    TextField("Email", text: $email)
+                    TextField("Email", text: $viewModel.email)
                         .textFieldStyle(RoundedTextFieldStyle())
                         .autocapitalization(.none)
                         .keyboardType(.emailAddress)
                     
-                    SecureField("Password", text: $password)
+                    SecureField("Password", text: $viewModel.password)
                         .textFieldStyle(RoundedTextFieldStyle())
                 }
                 .padding(.horizontal, 25)
                 
-                if showError {
-                    Text(errorMessage)
+                if viewModel.showError {
+                    Text(viewModel.errorMessage)
                         .foregroundColor(.red)
                         .font(.subheadline)
                         .transition(.opacity)
                 }
                 
                 Button(action: {
-                    if isLogin {
-                        viewModel.login(email: email, password: password) { success, error in
-                            if success {
-                                UserDefaults.standard.set(true, forKey: "isLoggedIn")
-                                UserDefaults.standard.set(email.components(separatedBy: "@").first ?? "User", forKey: "username")
-                                isPresented = false
-                            } else {
-                                errorMessage = error ?? "Login failed"
-                                showError = true
-                            }
-                        }
-                    } else {
-                        viewModel.signUp(email: email, password: password) { success, error in
-                            if success {
-                                UserDefaults.standard.set(true, forKey: "isLoggedIn")
-                                UserDefaults.standard.set(email.components(separatedBy: "@").first ?? "User", forKey: "username")
-                                isPresented = false
-                            } else {
-                                errorMessage = error ?? "Sign up failed"
-                                showError = true
-                            }
-                        }
+                    Task {
+                        await viewModel.signIn() // Call the async sign-in function
                     }
                 }) {
-                    Text(isLogin ? "Login" : "Sign Up")
+                    Text(isLogin ? "Login" : "Create an Account")
                         .font(.headline)
                         .foregroundColor(.white)
                         .padding()
@@ -86,28 +85,12 @@ struct LoginView: View {
                 Button(action: {
                     withAnimation {
                         isLogin.toggle()
-                        showError = false
+                        viewModel.showError = false
                     }
                 }) {
                     Text(isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login")
                         .foregroundColor(Color("AccentColor"))
                         .font(.subheadline)
-                }
-                
-                if isLogin {
-                    Button(action: {
-                        // Demo mode - skip login
-                        UserDefaults.standard.set(true, forKey: "isLoggedIn")
-                        UserDefaults.standard.set("Demo User", forKey: "username")
-                        viewModel.isLoggedIn = true
-                        viewModel.username = "Demo User"
-                        isPresented = false
-                    }) {
-                        Text("Continue as Guest")
-                            .foregroundColor(.gray)
-                            .font(.subheadline)
-                    }
-                    .padding(.top, 5)
                 }
                 
                 Spacer()

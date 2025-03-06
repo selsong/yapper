@@ -42,7 +42,7 @@ class FlashcardGameViewModel: ObservableObject {
                 language: "Chinese",
                 flagEmoji: "🇨🇳",
                 cards: [
-                    SlangCard(term: "六 / 666", pronunciation: "liù / liù liù liù", meaning: "Awesome skills, good job", example: "Often used in gaming context"),
+                    SlangCard(term: "六 / 666", pronunciation: "liù", meaning: "Awesome skills, good job", example: "Often used in gaming context"),
                     SlangCard(term: "牛", pronunciation: "niú", meaning: "Awesome, super cool", example: "你真牛! (You're so awesome!)"),
                     SlangCard(term: "哥们儿", pronunciation: "gēmenr", meaning: "Dude, Bro", example: "哥们儿，你去哪里? (Dude, where are you going?)"),
                     SlangCard(term: "啥", pronunciation: "shá", meaning: "What?", example: "Same as 什么 (shén me)"),

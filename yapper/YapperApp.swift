@@ -22,9 +22,13 @@ struct YapperApp: App {
         
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .preferredColorScheme(.dark)
-                .accentColor(Color("AccentColor"))
+            NavigationStack{
+                LoginView()
+            }
+            
+//            ContentView()
+//                .preferredColorScheme(.dark)
+//                .accentColor(Color("AccentColor"))
         }
     }
 }
