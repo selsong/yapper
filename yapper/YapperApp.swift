@@ -23,7 +23,7 @@ struct YapperApp: App {
     var body: some Scene {
         WindowGroup {
             NavigationStack{
-                LoginView()
+                RootView()
             }
             
 //            ContentView()

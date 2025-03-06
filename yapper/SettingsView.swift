@@ -1,17 +1,40 @@
-////
-////  SettingsView.swift
-////  yapper
-////
-////  Created by Selina Song on 3/3/25.
-////
 //
-//import SwiftUI
+//  SettingsView.swift
+//  yapper
 //
-//struct SettingsView: View {
-//    @Environment(\.presentationMode) var presentationMode
-//    @AppStorage("useDarkMode") private var useDarkMode = true
-//    
-//    var body: some View {
+//  Created by Selina Song on 3/3/25.
+//
+
+import SwiftUI
+
+@MainActor
+final class SettingsViewModel: ObservableObject{
+    func signOut() throws{
+        try AuthManager.shared.signOut()
+        
+    }
+}
+
+struct SettingsView: View {
+    @StateObject private var viewModel = SettingsViewModel()
+    @Binding var showSignInView: Bool
+    var body: some View {
+        List{
+            Button("Log out"){
+                Task{
+                    do{
+                        try viewModel.signOut()
+                        showSignInView = true
+                    }catch{
+                        print(error)
+                        
+                    }
+                }
+                
+            }
+        }
+        .navigationBarTitle("Settings")
+        
 //        ZStack {
 //            Color("BackgroundColor")
 //                .edgesIgnoringSafeArea(.all)
@@ -45,5 +68,5 @@
 //            Image(systemName: "xmark")
 //                .foregroundColor(.white)
 //        })
-//    }
-//}
+   }
+}

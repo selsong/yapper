@@ -56,7 +56,7 @@ struct ContentView: View {
                 }
             }
             .navigationBarTitle("Slang Flashcards", displayMode: .inline)
-//            .navigationBarItems(
+            .navigationBarItems(
 //                leading:
 //                    Button(action: {
 //                        showLogin = true
@@ -64,12 +64,12 @@ struct ContentView: View {
 //                        Image(systemName: "person.circle")
 //                            .foregroundColor(.white)
 //                    },
-//                trailing:
-//                    NavigationLink(destination: SettingsView()) {
-//                        Image(systemName: "gear")
-//                            .foregroundColor(.white)
-//                    }
-//            )
+                trailing:
+                    NavigationLink(destination: SettingsView(showSignInView: $showLogin)) {
+                        Image(systemName: "gear")
+                            .foregroundColor(.white)
+                    }
+            )
 //            .sheet(isPresented: $showLogin) {
 //                LoginView(isPresented: $showLogin, viewModel: viewModel)
 //            }

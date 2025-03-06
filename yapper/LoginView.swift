@@ -1,5 +1,5 @@
 import SwiftUI
-
+import FirebaseAuth
 @MainActor
 final class LoginViewModel: ObservableObject {
     @Published var email = ""
@@ -7,95 +7,111 @@ final class LoginViewModel: ObservableObject {
     
     @Published var errorMessage: String = ""
     @Published var showError: Bool = false
+    // Add this variable to notify when user is logged in
+    @Published var isLoggedIn = false
 
     func signIn() async {
-        guard !email.isEmpty, !password.isEmpty else {
-            self.errorMessage = "No email or password found."
-            self.showError = true
-            return
-        }
-        
         do {
-            let returnedUserData = try await AuthManager.shared.createUser(email: email, password: password)
-            print("Success")
-            print(returnedUserData)
-            // Handle success logic here, e.g., navigate to a new view
+            // Try to sign in first
+            let authResult = try await AuthManager.shared.signIn(email: email, password: password)
+            print("Signed in with UID: \(authResult.uid)")
+            isLoggedIn = true
+            showError = false
         } catch {
-            self.errorMessage = "Error: \(error)"
-            self.showError = true
+            // If sign-in fails, try creating a new account
+            do {
+                let authResult = try await AuthManager.shared.createUser(email: email, password: password)
+                print("Account created with UID: \(authResult.uid)")
+                isLoggedIn = true
+                showError = false
+            } catch {
+                // Handle any errors (e.g., email already in use)
+                errorMessage = error.localizedDescription
+                showError = true
+            }
         }
     }
 }
 
 struct LoginView: View {
-    @State private var isLogin: Bool = true
-    @State private var isPresented: Bool = false
     @StateObject private var viewModel = LoginViewModel()
-    
+    @State private var navigateToContentView = false
+    @State private var keyboardHeight: CGFloat = 0
+
     var body: some View {
         ZStack {
             Color("BackgroundColor")
                 .edgesIgnoringSafeArea(.all)
             
-            VStack(spacing: 55) {
-                Text("Yapper")
-                    .font(.system(size: 40, weight: .bold))
-                    .foregroundColor(.white)
-                
-                Text(isLogin ? "Login" : "Create an Account")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                
-                // Main Login Part
-                VStack(spacing: 15) {
-                    TextField("Email", text: $viewModel.email)
-                        .textFieldStyle(RoundedTextFieldStyle())
-                        .autocapitalization(.none)
-                        .keyboardType(.emailAddress)
-                    
-                    SecureField("Password", text: $viewModel.password)
-                        .textFieldStyle(RoundedTextFieldStyle())
-                }
-                .padding(.horizontal, 25)
-                
-                if viewModel.showError {
-                    Text(viewModel.errorMessage)
-                        .foregroundColor(.red)
-                        .font(.subheadline)
-                        .transition(.opacity)
-                }
-                
-                Button(action: {
-                    Task {
-                        await viewModel.signIn() // Call the async sign-in function
-                    }
-                }) {
-                    Text(isLogin ? "Login" : "Create an Account")
-                        .font(.headline)
+            ScrollView {
+                VStack(spacing: 40) {
+                    Text("Yapper")
+                        .font(.system(size: 40, weight: .bold))
                         .foregroundColor(.white)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color("AccentColor"))
-                        .cornerRadius(10)
-                }
-                .padding(.horizontal, 25)
-                .padding(.top, 10)
-                
-                Button(action: {
-                    withAnimation {
-                        isLogin.toggle()
-                        viewModel.showError = false
+
+                    Text("Login or Create an Account")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                    
+                    VStack(spacing: 15) {
+                        TextField("Email", text: $viewModel.email)
+                            .textFieldStyle(RoundedTextFieldStyle())
+                            .autocapitalization(.none)
+                            .keyboardType(.emailAddress)
+                            .padding(.bottom, 10)
+                        
+                        SecureField("Password", text: $viewModel.password)
+                            .textFieldStyle(RoundedTextFieldStyle())
                     }
-                }) {
-                    Text(isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login")
-                        .foregroundColor(Color("AccentColor"))
-                        .font(.subheadline)
+                    .padding(.horizontal, 25)
+                    
+                    if viewModel.showError {
+                        Text(viewModel.errorMessage)
+                            .foregroundColor(.red)
+                            .font(.subheadline)
+                            .transition(.opacity)
+                    }
+                    
+                    Button(action: {
+                        Task {
+                            await viewModel.signIn()
+                        }
+                    }) {
+                        Text("Submit")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color("AccentColor"))
+                            .cornerRadius(10)
+                    }
+                    .padding(.horizontal, 25)
+                    
+                    Spacer()
                 }
-                
-                Spacer()
+                .padding(.top, 50)
+                .onChange(of: viewModel.isLoggedIn) { isLoggedIn in
+                    if isLoggedIn {
+                        navigateToContentView = true
+                    }
+                }
+                .padding(.bottom, keyboardHeight)
             }
-            .padding(.top, 50)
+            .onAppear {
+                NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main) { notification in
+                    if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+                        keyboardHeight = keyboardFrame.height
+                    }
+                }
+                NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main) { _ in
+                    keyboardHeight = 0
+                }
+            }
+            // Automatically navigate to ContentView once logged in
+            NavigationLink(destination: ContentView(), isActive: $viewModel.isLoggedIn) {
+                EmptyView()
+            }
         }
     }
 }
