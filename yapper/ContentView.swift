@@ -8,8 +8,10 @@
 import SwiftUI
 
 // MARK: - Views
+
 struct ContentView: View {
     @StateObject private var viewModel = FlashcardGameViewModel()
+    @State private var showLogin = true
     
     var body: some View {
         NavigationView {
@@ -18,6 +20,11 @@ struct ContentView: View {
                     .edgesIgnoringSafeArea(.all)
                 
                 VStack {
+                    // Toast notification for pronunciation feedback
+                    if viewModel.showPronunciationFeedback {
+                        ToastView(message: viewModel.pronunciationFeedback, isSuccess: viewModel.pronunciationFeedback.contains("Great"))
+                    }
+                    
                     HStack {
                         Text("Score: \(viewModel.score)")
                             .font(.headline)
@@ -37,17 +44,7 @@ struct ContentView: View {
                     }
                     .padding(.top)
                     
-                    Picker(selection: $viewModel.selectedDeckIndex, label: Text("Language")) {
-                        ForEach(0..<viewModel.decks.count, id: \.self) { index in
-                            Text("\(viewModel.decks[index].flagEmoji) \(viewModel.decks[index].language)")
-                                .foregroundColor(.white)
-                        }
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding()
-                    .background(Color("AccentColor"))
-                    .cornerRadius(10)
-                    .padding(.horizontal)
+                    DeckSelectorView(viewModel: viewModel)
                     
                     Spacer()
                     
@@ -59,18 +56,82 @@ struct ContentView: View {
                 }
             }
             .navigationBarTitle("Slang Flashcards", displayMode: .inline)
-            .navigationBarItems(trailing:
-                NavigationLink(destination: SettingsView()) {
-                    Image(systemName: "gear")
-                        .foregroundColor(.white)
-                }
+            .navigationBarItems(
+                leading:
+                    Button(action: {
+                        showLogin = true
+                    }) {
+                        Image(systemName: "person.circle")
+                            .foregroundColor(.white)
+                    },
+                trailing:
+                    NavigationLink(destination: SettingsView()) {
+                        Image(systemName: "gear")
+                            .foregroundColor(.white)
+                    }
             )
+            .sheet(isPresented: $showLogin) {
+                LoginView(isPresented: $showLogin, viewModel: viewModel)
+            }
         }
         .accentColor(.white)
         .preferredColorScheme(.dark)
     }
 }
 
+
+// Separate DeckSelector into its own view
+struct DeckSelectorView: View {
+    @ObservedObject var viewModel: FlashcardGameViewModel
+    
+    var body: some View {
+        TabView(selection: $viewModel.selectedDeckIndex) {
+            ForEach(0..<viewModel.decks.count, id: \.self) { index in
+                VStack {
+                    Text("\(viewModel.decks[index].flagEmoji) \(viewModel.decks[index].language)")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                    
+                    Text("\(viewModel.masteredCardsCount(for: index))/\(viewModel.decks[index].cards.count) Mastered")
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.8))
+                }
+                .tag(index)
+            }
+        }
+        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
+        .frame(height: 80)
+        .background(Color("AccentColor").opacity(0.3))
+        .cornerRadius(10)
+        .padding(.horizontal)
+    }
+}
+
+
+// Create a toast notification view
+struct ToastView: View {
+    let message: String
+    let isSuccess: Bool
+    
+    var body: some View {
+        HStack {
+            Image(systemName: isSuccess ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                .foregroundColor(isSuccess ? .green : .orange)
+            
+            Text(message)
+                .font(.headline)
+                .foregroundColor(.white)
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.black.opacity(0.7))
+        )
+        .padding(.top, 10)
+        .transition(.move(edge: .top).combined(with: .opacity))
+        .zIndex(100)
+    }
+}
 struct FlashcardView: View {
     @ObservedObject var viewModel: FlashcardGameViewModel
     
@@ -82,6 +143,20 @@ struct FlashcardView: View {
                 .frame(width: 300, height: 400)
             
             VStack(spacing: 20) {
+                // Progress indicator
+                HStack {
+                    Text("\(viewModel.currentCardIndex + 1)/\(viewModel.currentDeck.cards.count)")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                    Spacer()
+                    if viewModel.currentCard.mastered {
+                        Label("Mastered", systemImage: "star.fill")
+                            .font(.caption)
+                            .foregroundColor(.yellow)
+                    }
+                }
+                .padding(.horizontal)
+                
                 Text("\(viewModel.currentDeck.language) Slang")
                     .font(.headline)
                     .foregroundColor(Color("AccentColor"))
@@ -110,12 +185,6 @@ struct FlashcardView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                     
-                    if viewModel.showPronunciationFeedback {
-                        Text(viewModel.pronunciationFeedback)
-                            .font(.headline)
-                            .foregroundColor(viewModel.pronunciationFeedback.contains("Great") ? .green : .orange)
-                            .padding()
-                    }
                 } else {
                     Text(viewModel.currentCard.meaning)
                         .font(.title)
@@ -159,7 +228,6 @@ struct FlashcardView: View {
         }
     }
 }
-
 struct ControlsView: View {
     @ObservedObject var viewModel: FlashcardGameViewModel
     

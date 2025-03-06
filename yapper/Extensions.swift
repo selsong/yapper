@@ -11,4 +11,5 @@ import SwiftUI
 extension Color {
     static let appNavy = Color("AccentColor")
     static let appBackground = Color("BackgroundColor")
+    
 }

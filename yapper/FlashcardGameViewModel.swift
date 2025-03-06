@@ -10,6 +10,7 @@ import SwiftUI
 import AVFoundation
 import Speech
 import Combine
+import Firebase
 
 // MARK: - View Models
 class FlashcardGameViewModel: ObservableObject {
@@ -22,11 +23,17 @@ class FlashcardGameViewModel: ObservableObject {
     @Published var pronunciationResult: String = ""
     @Published var pronunciationFeedback: String = ""
     @Published var showPronunciationFeedback: Bool = false
+    @Published var isLoggedIn: Bool = false
+    @Published var username: String = ""
+        
     
     private var speechRecognizer: SFSpeechRecognizer?
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private let audioEngine = AVAudioEngine()
+    private var cancellables = Set<AnyCancellable>()
+    private var autoAdvanceTimer: Timer?
+
     
     init() {
         // Initialize with sample data
@@ -73,14 +80,17 @@ class FlashcardGameViewModel: ObservableObject {
         ]
         
         setupSpeechRecognition()
-        // update speech recognition when deck changes
-        self.$selectedDeckIndex.sink { [weak self] _ in
-            self?.updateSpeechRecognizerForCurrentLanguage()
-        }.store(in: &cancellables)
+        // Add observer for deck changes
+                self.$selectedDeckIndex.sink { [weak self] _ in
+                    self?.updateSpeechRecognizerForCurrentLanguage()
+                    self?.showPronunciationFeedback = false
+                    self?.currentCardIndex = 0
+                }.store(in: &cancellables)
+                
+                // Check if user is already logged in
+                checkLoginStatus()
     }
     
-    // property to store cancellables
-    private var cancellables = Set<AnyCancellable>()
     
     var currentDeck: LanguageDeck {
         decks[selectedDeckIndex]
@@ -89,7 +99,9 @@ class FlashcardGameViewModel: ObservableObject {
     var currentCard: SlangCard {
         currentDeck.cards[currentCardIndex]
     }
-    
+    func masteredCardsCount(for deckIndex: Int) -> Int {
+        return decks[deckIndex].cards.filter { $0.mastered }.count
+    }
     func nextCard() {
         isShowingAnswer = false
         if currentCardIndex < currentDeck.cards.count - 1 {
@@ -102,6 +114,7 @@ class FlashcardGameViewModel: ObservableObject {
     
     func previousCard() {
         isShowingAnswer = false
+        showPronunciationFeedback = false
         if currentCardIndex > 0 {
             currentCardIndex -= 1
         } else {
@@ -119,6 +132,7 @@ class FlashcardGameViewModel: ObservableObject {
         updatedDecks[selectedDeckIndex].cards[currentCardIndex].mastered = true
         decks = updatedDecks
         score += 10
+        saveUserProgress()
     }
     
     // Add this method to update the speech recognizer when language changes
@@ -162,6 +176,8 @@ class FlashcardGameViewModel: ObservableObject {
         }
     
     func startRecording() {
+        // Cancel any existing timer
+        autoAdvanceTimer?.invalidate()
         // Check if a recording is already in progress
         if audioEngine.isRunning {
             audioEngine.stop()
@@ -273,10 +289,22 @@ class FlashcardGameViewModel: ObservableObject {
         print("Correct: \(correctPronunciation)")
         print("Match percentages - Pronunciation: \(pronunciationMatchPercent), Term: \(termMatchPercent)")
         
+        
         // Determine feedback based on match percentages
         if pronunciationMatchPercent > 0.5 || termMatchPercent > 0.5 {
             pronunciationFeedback = "Great job! 🎉"
             score += 5
+            
+            // Auto-mark as mastered
+            if !currentCard.mastered {
+                markAsMastered()
+            }
+            
+            // Set timer to auto-advance to next card
+            autoAdvanceTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
+                guard let self = self else { return }
+                self.nextCard()
+            }
         } else if pronunciationMatchPercent > 0.2 || termMatchPercent > 0.2 {
             pronunciationFeedback = "Getting closer! Try again."
         } else {
@@ -284,6 +312,13 @@ class FlashcardGameViewModel: ObservableObject {
         }
         
         showPronunciationFeedback = true
+        
+    // Auto-hide feedback after 3 seconds
+       DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+           withAnimation {
+               self.showPronunciationFeedback = false
+           }
+       }
     }
     
     private func calculateSimilarity(between string1: String, and string2: String) -> Double {
@@ -295,5 +330,99 @@ class FlashcardGameViewModel: ObservableObject {
         let union = set1.union(set2).count
         
         return Double(intersection) / Double(union)
+    }
+    
+    
+    // MARK: - User Login and Progress Tracking
+    
+    func login(email: String, password: String, completion: @escaping (Bool, String?) -> Void) {
+        // For demo, we're using a simple authentication
+        // In a real app, you'd use Firebase or another auth service
+        if email.contains("@") && password.count >= 6 {
+            isLoggedIn = true
+            username = email.components(separatedBy: "@").first ?? "User"
+            loadUserProgress()
+            completion(true, nil)
+        } else {
+            completion(false, "Invalid email or password (must be 6+ characters)")
+        }
+    }
+    
+    func signUp(email: String, password: String, completion: @escaping (Bool, String?) -> Void) {
+        // For demo purposes
+        if email.contains("@") && password.count >= 6 {
+            isLoggedIn = true
+            username = email.components(separatedBy: "@").first ?? "User"
+            completion(true, nil)
+        } else {
+            completion(false, "Invalid email or password (must be 6+ characters)")
+        }
+    }
+    
+    func logout() {
+        isLoggedIn = false
+        username = ""
+    }
+    
+    private func checkLoginStatus() {
+        // In a real app, check if the user is logged in using your auth provider
+        isLoggedIn = UserDefaults.standard.bool(forKey: "isLoggedIn")
+        username = UserDefaults.standard.string(forKey: "username") ?? ""
+        
+        if isLoggedIn {
+            loadUserProgress()
+        }
+    }
+    
+    // Save and load user progress (mastered cards)
+    private func saveUserProgress() {
+        guard isLoggedIn else { return }
+        
+        // In a real app, you would save to a backend service
+        // For now, we'll use UserDefaults as a simple demonstration
+        
+        var masteredCardIDs: [String: [String]] = [:]
+        
+        for (index, deck) in decks.enumerated() {
+            let deckKey = "\(deck.language)_\(index)"
+            let masteredIDs = deck.cards.filter { $0.mastered }.map { $0.id.uuidString }
+            masteredCardIDs[deckKey] = masteredIDs
+        }
+        
+        if let encoded = try? JSONEncoder().encode(masteredCardIDs) {
+            UserDefaults.standard.set(encoded, forKey: "masteredCards_\(username)")
+        }
+        
+        // Save score
+        UserDefaults.standard.set(score, forKey: "score_\(username)")
+    }
+    
+    private func loadUserProgress() {
+        guard isLoggedIn else { return }
+        
+        // Load mastered cards
+        if let savedData = UserDefaults.standard.data(forKey: "masteredCards_\(username)"),
+           let masteredCardIDs = try? JSONDecoder().decode([String: [String]].self, from: savedData) {
+            
+            var updatedDecks = decks
+            
+            for (index, deck) in updatedDecks.enumerated() {
+                let deckKey = "\(deck.language)_\(index)"
+                
+                if let masteredIDs = masteredCardIDs[deckKey] {
+                    for i in 0..<deck.cards.count {
+                        let cardID = deck.cards[i].id.uuidString
+                        if masteredIDs.contains(cardID) {
+                            updatedDecks[index].cards[i].mastered = true
+                        }
+                    }
+                }
+            }
+            
+            decks = updatedDecks
+        }
+        
+        // Load score
+        score = UserDefaults.standard.integer(forKey: "score_\(username)")
     }
 }
