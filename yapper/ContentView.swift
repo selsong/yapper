@@ -172,10 +172,22 @@ struct ControlsView: View {
                         .foregroundColor(.white)
                 }
                 
+                // Make the microphone button more prominent
                 Button(action: viewModel.startRecording) {
-                    Image(systemName: viewModel.isRecording ? "stop.circle.fill" : "mic.circle.fill")
-                        .font(.system(size: 50))
-                        .foregroundColor(viewModel.isRecording ? .red : .white)
+                    VStack {
+                        Image(systemName: viewModel.isRecording ? "stop.circle.fill" : "mic.circle.fill")
+                            .font(.system(size: 50))
+                            .foregroundColor(viewModel.isRecording ? .red : .green)
+                            .background(
+                                Circle()
+                                    .fill(Color.white.opacity(0.2))
+                                    .frame(width: 60, height: 60)
+                            )
+                        
+                        Text(viewModel.isRecording ? "Stop" : "Record")
+                            .font(.caption)
+                            .foregroundColor(.white)
+                    }
                 }
                 
                 Button(action: viewModel.nextCard) {

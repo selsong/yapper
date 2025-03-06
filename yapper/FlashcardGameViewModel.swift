@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import AVFoundation
 import Speech
+import Combine
 
 // MARK: - View Models
 class FlashcardGameViewModel: ObservableObject {
@@ -72,7 +73,14 @@ class FlashcardGameViewModel: ObservableObject {
         ]
         
         setupSpeechRecognition()
+        // update speech recognition when deck changes
+        self.$selectedDeckIndex.sink { [weak self] _ in
+            self?.updateSpeechRecognizerForCurrentLanguage()
+        }.store(in: &cancellables)
     }
+    
+    // property to store cancellables
+    private var cancellables = Set<AnyCancellable>()
     
     var currentDeck: LanguageDeck {
         decks[selectedDeckIndex]
@@ -113,23 +121,45 @@ class FlashcardGameViewModel: ObservableObject {
         score += 10
     }
     
-    private func setupSpeechRecognition() {
-        // Set up speech recognition
-        speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
+    // Add this method to update the speech recognizer when language changes
+    private func updateSpeechRecognizerForCurrentLanguage() {
+        let language = currentDeck.language
+        var localeIdentifier = "en-US"  // Default
         
-        SFSpeechRecognizer.requestAuthorization { authStatus in
-            OperationQueue.main.addOperation {
-                switch authStatus {
-                case .authorized:
-                    print("Speech recognition authorized")
-                case .denied, .restricted, .notDetermined:
-                    print("Speech recognition not authorized")
-                @unknown default:
-                    print("Unknown authorization status")
+        // Set the appropriate locale based on the language
+        switch language {
+        case "Chinese":
+            localeIdentifier = "zh-CN"
+        case "Korean":
+            localeIdentifier = "ko-KR"
+        default:
+            localeIdentifier = "en-US"
+        }
+        
+        speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: localeIdentifier))
+    }
+
+    private func setupSpeechRecognition() {
+        updateSpeechRecognizerForCurrentLanguage()
+            
+            // Request authorization
+            SFSpeechRecognizer.requestAuthorization { authStatus in
+                OperationQueue.main.addOperation {
+                    switch authStatus {
+                    case .authorized:
+                        print("Speech recognition authorized")
+                    case .denied:
+                        print("Speech recognition denied")
+                    case .restricted:
+                        print("Speech recognition restricted")
+                    case .notDetermined:
+                        print("Speech recognition not determined")
+                    @unknown default:
+                        print("Unknown authorization status")
+                    }
                 }
             }
         }
-    }
     
     func startRecording() {
         // Check if a recording is already in progress
@@ -140,21 +170,13 @@ class FlashcardGameViewModel: ObservableObject {
             return
         }
         
-        let language = currentDeck.language
-        var localeIdentifier = "en-US"  // Default
+        // Make sure we're using the correct language
+        updateSpeechRecognizerForCurrentLanguage()
         
-        // Set the appropriate locale based on the language
-        switch language {
-        case "Chinese":
-            localeIdentifier = "zh-CN"
-        case "Korean":
-            localeIdentifier = "ko-KR"
-        // Add more languages as needed
-        default:
-            localeIdentifier = "en-US"
-        }
-        
-        speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: localeIdentifier))
+        guard let speechRecognizer = speechRecognizer, speechRecognizer.isAvailable else {
+                print("Speech recognizer is not available for the current locale")
+                return
+            }
         
         do {
             // Cancel the previous task if it's running
@@ -186,7 +208,7 @@ class FlashcardGameViewModel: ObservableObject {
             try audioEngine.start()
             
             // Start recognition
-            recognitionTask = speechRecognizer?.recognitionTask(with: recognitionRequest) { result, error in
+            recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { result, error in
                 var isFinal = false
                 
                 if let result = result {
@@ -218,18 +240,44 @@ class FlashcardGameViewModel: ObservableObject {
     }
     
     func evaluatePronunciation() {
-        // Simple evaluation by checking if the recognized text contains the term or pronunciation
-        let userPronunciation = pronunciationResult.lowercased()
-        let correctPronunciation = currentCard.pronunciation.lowercased()
-        let term = currentCard.term.lowercased()
+        let userPronunciation = pronunciationResult.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        let correctPronunciation = currentCard.pronunciation.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        let term = currentCard.term.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // Calculate similarity
-        let similarity = calculateSimilarity(between: userPronunciation, and: correctPronunciation)
+        // Check if the pronunciation is empty
+        if userPronunciation.isEmpty {
+            pronunciationFeedback = "I couldn't hear anything. Please try again."
+            showPronunciationFeedback = true
+            return
+        }
         
-        if userPronunciation.contains(term) || userPronunciation.contains(correctPronunciation) || similarity > 0.6 {
+        // Split strings into words for better comparison
+        let userWords = userPronunciation.components(separatedBy: .whitespaces)
+        let correctWords = correctPronunciation.components(separatedBy: .whitespaces)
+        let termWords = term.components(separatedBy: .whitespaces)
+        
+        // Check if user pronunciation contains any of the correct words
+        let matchedPronunciationWords = correctWords.filter { correctWord in
+            userWords.contains { $0.contains(correctWord) || correctWord.contains($0) }
+        }
+        
+        let matchedTermWords = termWords.filter { termWord in
+            userWords.contains { $0.contains(termWord) || termWord.contains($0) }
+        }
+        
+        // Calculate match percentages
+        let pronunciationMatchPercent = Double(matchedPronunciationWords.count) / Double(correctWords.count)
+        let termMatchPercent = Double(matchedTermWords.count) / Double(termWords.count)
+        
+        print("User said: \(userPronunciation)")
+        print("Correct: \(correctPronunciation)")
+        print("Match percentages - Pronunciation: \(pronunciationMatchPercent), Term: \(termMatchPercent)")
+        
+        // Determine feedback based on match percentages
+        if pronunciationMatchPercent > 0.5 || termMatchPercent > 0.5 {
             pronunciationFeedback = "Great job! 🎉"
             score += 5
-        } else if similarity > 0.3 {
+        } else if pronunciationMatchPercent > 0.2 || termMatchPercent > 0.2 {
             pronunciationFeedback = "Getting closer! Try again."
         } else {
             pronunciationFeedback = "Keep practicing! Try to say: \(correctPronunciation)"
