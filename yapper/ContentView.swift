@@ -95,15 +95,18 @@ struct DeckSelectorView: View {
                     Text("\(viewModel.masteredCardsCount(for: index))/\(viewModel.decks[index].cards.count) Mastered")
                         .font(.subheadline)
                         .foregroundColor(.white.opacity(0.8))
+                    Spacer()
                 }
                 .tag(index)
             }
         }
+        .padding(.top, 10)
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
-        .frame(height: 80)
+        .frame(height: 90)
         .background(Color("AccentColor").opacity(0.3))
         .cornerRadius(10)
         .padding(.horizontal)
+//
     }
 }
 
@@ -127,7 +130,7 @@ struct ToastView: View {
             RoundedRectangle(cornerRadius: 10)
                 .fill(Color.black.opacity(0.7))
         )
-        .padding(.top, 10)
+        .padding(.top, 20)
         .transition(.move(edge: .top).combined(with: .opacity))
         .zIndex(100)
     }
@@ -140,7 +143,7 @@ struct FlashcardView: View {
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color.white)
                 .shadow(radius: 10)
-                .frame(width: 300, height: 400)
+                .frame(width: 300, height: 350)
             
             VStack(spacing: 20) {
                 // Progress indicator
@@ -159,13 +162,13 @@ struct FlashcardView: View {
                 
                 Text("\(viewModel.currentDeck.language) Slang")
                     .font(.headline)
-                    .foregroundColor(Color("AccentColor"))
+                    .foregroundColor(Color("FeatureColor"))
                 
                 if viewModel.isShowingAnswer {
                     Text(viewModel.currentCard.term)
                         .font(.title)
                         .fontWeight(.bold)
-                        .foregroundColor(Color("AccentColor"))
+                        .foregroundColor(Color("FeatureColor"))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                     
@@ -189,7 +192,7 @@ struct FlashcardView: View {
                     Text(viewModel.currentCard.meaning)
                         .font(.title)
                         .fontWeight(.bold)
-                        .foregroundColor(Color("AccentColor"))
+                        .foregroundColor(Color("FeatureColor"))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                     
@@ -211,7 +214,7 @@ struct FlashcardView: View {
                 }
             }
             .padding()
-            .frame(width: 300, height: 400)
+            .frame(width: 300, height: 350)
             .onTapGesture {
                 withAnimation {
                     viewModel.toggleAnswer()
@@ -265,15 +268,15 @@ struct ControlsView: View {
                 }
             }
             
-            Button(action: viewModel.markAsMastered) {
-                Text("I know this!")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.green))
-            }
-            .opacity(viewModel.currentCard.mastered ? 0.5 : 1)
-            .disabled(viewModel.currentCard.mastered)
+//            Button(action: viewModel.markAsMastered) {
+//                Text("I know this!")
+//                    .font(.headline)
+//                    .foregroundColor(.white)
+//                    .padding()
+//                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.green))
+//            }
+//            .opacity(viewModel.currentCard.mastered ? 0.5 : 1)
+//            .disabled(viewModel.currentCard.mastered)
         }
         .padding()
     }
