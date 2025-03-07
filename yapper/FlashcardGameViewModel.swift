@@ -39,29 +39,6 @@ class FlashcardGameViewModel: ObservableObject {
         // Initialize with sample data
         self.decks = [
             LanguageDeck(
-                language: "Chinese",
-                flagEmoji: "🇨🇳",
-                cards: [
-                    SlangCard(term: "六 / 666", pronunciation: "liù", meaning: "Awesome skills, good job", example: "Often used in gaming context"),
-                    SlangCard(term: "牛", pronunciation: "niú", meaning: "Awesome, super cool", example: "你真牛! (You're so awesome!)"),
-                    SlangCard(term: "哥们儿", pronunciation: "gēmenr", meaning: "Dude, Bro", example: "哥们儿，你去哪里? (Dude, where are you going?)"),
-                    SlangCard(term: "啥", pronunciation: "shá", meaning: "What?", example: "Same as 什么 (shén me)"),
-                    SlangCard(term: "哇塞", pronunciation: "wāsài", meaning: "Wow", example: "哇塞! 这太棒了! (Wow! This is great!)"),
-                    SlangCard(term: "酷", pronunciation: "kù", meaning: "Cool", example: "这很酷! (That's cool!)"),
-                    SlangCard(term: "放鸽子", pronunciation: "fàng gēzi", meaning: "To stand somebody up", example: "他又放鸽子了! (He stood me up again!)"),
-                    SlangCard(term: "摆烂", pronunciation: "bǎi làn", meaning: "Give up", example: "Context: give up and lay down"),
-                    SlangCard(term: "有一说一", pronunciation: "yǒu yī shuō yī", meaning: "TBH (To be honest)", example: "Abbreviated as u1s1"),
-                    SlangCard(term: "懂得都懂", pronunciation: "dǒng de dōu dǒng", meaning: "If you know, you know", example: "Abbreviated as dddd"),
-                    SlangCard(term: "永远的神", pronunciation: "yǒngyuǎn de shén", meaning: "GOAT (Greatest Of All Time)", example: "Abbreviated as yyds"),
-                    SlangCard(term: "i人 / e人", pronunciation: "i rén / e rén", meaning: "Introvert / Extrovert", example: "Based on MBTI personality test"),
-                    SlangCard(term: "女神 / 男神", pronunciation: "nǚ shén / nán shén", meaning: "Celebrity crush", example: "Person you think is incredibly attractive"),
-                    SlangCard(term: "太油了", pronunciation: "tài yóu le", meaning: "Greasy", example: "Reference to unkempt middle-aged men"),
-                    SlangCard(term: "笔芯", pronunciation: "bǐ xīn", meaning: "Love you", example: "A cute way of saying 'love you' (sounds like 'bless you')"),
-                    SlangCard(term: "太可了", pronunciation: "tài kě le", meaning: "Super cute", example: "This outfit is 太可了!"),
-                    SlangCard(term: "绝绝子", pronunciation: "jué jué zi", meaning: "Absolutely amazing", example: "This restaurant is 绝绝子!")
-                ]
-            ),
-            LanguageDeck(
                 language: "Korean",
                 flagEmoji: "🇰🇷",
                 cards: [
@@ -75,6 +52,28 @@ class FlashcardGameViewModel: ObservableObject {
                     SlangCard(term: "짱", pronunciation: "Jjang", meaning: "The best", example: "너 정말 짱이야! (You're the best!)"),
                     SlangCard(term: "대박사건", pronunciation: "Daebak-sageon", meaning: "Big deal/huge event", example: "어제 대박사건이 있었어 (There was a huge event yesterday)"),
                     SlangCard(term: "억울해", pronunciation: "Eok-ul-hae", meaning: "It's unfair/I feel wronged", example: "정말 억울해! (It's so unfair!)")
+                ]),
+            LanguageDeck(
+                language: "Chinese",
+                flagEmoji: "🇨🇳",
+                cards: [
+                    SlangCard(term: "牛", pronunciation: "niú", meaning: "Awesome, super cool", example: "你真牛! (You're so awesome!)"),
+                    SlangCard(term: "哥们儿", pronunciation: "gēmenr", meaning: "Dude, Bro", example: "哥们儿，你去哪里? (Dude, where are you going?)"),
+                    SlangCard(term: "啥", pronunciation: "shá", meaning: "What?", example: "Same as 什么 (shén me)"),
+                    SlangCard(term: "哇塞", pronunciation: "wāsài", meaning: "Wow", example: "哇塞! 这太棒了! (Wow! This is great!)"),
+                    SlangCard(term: "酷", pronunciation: "kù", meaning: "Cool", example: "这很酷! (That's cool!)"),
+                    SlangCard(term: "六", pronunciation: "liù", meaning: "Awesome skills, good job", example: "Often used in gaming context, 666"),
+                    SlangCard(term: "放鸽子", pronunciation: "fàng gēzi", meaning: "To stand somebody up", example: "他又放鸽子了! (He stood me up again!)"),
+                    SlangCard(term: "摆烂", pronunciation: "bǎi làn", meaning: "Give up", example: "Context: give up and lay down"),
+                    SlangCard(term: "有一说一", pronunciation: "yǒu yī shuō yī", meaning: "TBH (To be honest)", example: "Abbreviated as u1s1"),
+                    SlangCard(term: "懂得都懂", pronunciation: "dǒng de dōu dǒng", meaning: "If you know, you know", example: "Abbreviated as dddd"),
+                    SlangCard(term: "永远的神", pronunciation: "yǒngyuǎn de shén", meaning: "GOAT (Greatest Of All Time)", example: "Abbreviated as yyds"),
+                    SlangCard(term: "i人 / e人", pronunciation: "i rén / e rén", meaning: "Introvert / Extrovert", example: "Based on MBTI personality test"),
+                    SlangCard(term: "女神 / 男神", pronunciation: "nǚ shén / nán shén", meaning: "Celebrity crush", example: "Person you think is incredibly attractive"),
+                    SlangCard(term: "太油了", pronunciation: "tài yóu le", meaning: "Greasy", example: "Reference to unkempt middle-aged men"),
+                    SlangCard(term: "笔芯", pronunciation: "bǐ xīn", meaning: "Love you", example: "A cute way of saying 'love you' (sounds like 'bless you')"),
+                    SlangCard(term: "太可了", pronunciation: "tài kě le", meaning: "Super cute", example: "This outfit is 太可了!"),
+                    SlangCard(term: "绝绝子", pronunciation: "jué jué zi", meaning: "Absolutely amazing", example: "This restaurant is 绝绝子!")
                 ]
             )
         ]

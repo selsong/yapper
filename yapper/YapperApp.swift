@@ -19,11 +19,13 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct YapperApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @StateObject private var loginViewModel = LoginViewModel()
         
     var body: some Scene {
         WindowGroup {
             NavigationStack{
                 RootView()
+                    .environmentObject(loginViewModel)
             }
             
 //            ContentView()
