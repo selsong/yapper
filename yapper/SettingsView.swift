@@ -119,11 +119,13 @@ struct SettingsView: View {
                 )
             }
         }
-        .onChange(of: navigateToLogin) { _ in
-            if navigateToLogin {
-                // Navigate to the login screen after account deletion or logout
-                NavigationLink("", destination: RootView(), isActive: $navigateToLogin)
-            }
+        // Handle navigation to login screen
+        .onChange(of: navigateToLogin) {
+            navigateToLogin = true // Reset the navigation state
+        }
+        // Using .navigationDestination instead of NavigationLink
+        .navigationDestination(isPresented: $navigateToLogin) {
+            RootView()
         }
     }
     
