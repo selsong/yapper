@@ -9,6 +9,8 @@ import Foundation
 import SwiftUI
 import AVFoundation
 import Speech
+import Combine
+import Firebase
 
 // MARK: - View Models
 class FlashcardGameViewModel: ObservableObject {
@@ -21,11 +23,17 @@ class FlashcardGameViewModel: ObservableObject {
     @Published var pronunciationResult: String = ""
     @Published var pronunciationFeedback: String = ""
     @Published var showPronunciationFeedback: Bool = false
-    
+    @Published var isLoggedIn: Bool = false
+    @Published var username: String = ""
+        
+    private var speechSynthesizer = AVSpeechSynthesizer()
     private var speechRecognizer: SFSpeechRecognizer?
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private let audioEngine = AVAudioEngine()
+    private var cancellables = Set<AnyCancellable>()
+    private var autoAdvanceTimer: Timer?
+
     
     init() {
         // Initialize with sample data
@@ -34,7 +42,7 @@ class FlashcardGameViewModel: ObservableObject {
                 language: "Chinese",
                 flagEmoji: "🇨🇳",
                 cards: [
-                    SlangCard(term: "六 / 666", pronunciation: "liù / liù liù liù", meaning: "Awesome skills, good job", example: "Often used in gaming context"),
+                    SlangCard(term: "六 / 666", pronunciation: "liù", meaning: "Awesome skills, good job", example: "Often used in gaming context"),
                     SlangCard(term: "牛", pronunciation: "niú", meaning: "Awesome, super cool", example: "你真牛! (You're so awesome!)"),
                     SlangCard(term: "哥们儿", pronunciation: "gēmenr", meaning: "Dude, Bro", example: "哥们儿，你去哪里? (Dude, where are you going?)"),
                     SlangCard(term: "啥", pronunciation: "shá", meaning: "What?", example: "Same as 什么 (shén me)"),
@@ -72,7 +80,18 @@ class FlashcardGameViewModel: ObservableObject {
         ]
         
         setupSpeechRecognition()
+        setupAudioSession()
+        // Add observer for deck changes
+                self.$selectedDeckIndex.sink { [weak self] _ in
+                    self?.updateSpeechRecognizerForCurrentLanguage()
+                    self?.showPronunciationFeedback = false
+                    self?.currentCardIndex = 0
+                }.store(in: &cancellables)
+                
+                // Check if user is already logged in
+                checkLoginStatus()
     }
+    
     
     var currentDeck: LanguageDeck {
         decks[selectedDeckIndex]
@@ -81,7 +100,9 @@ class FlashcardGameViewModel: ObservableObject {
     var currentCard: SlangCard {
         currentDeck.cards[currentCardIndex]
     }
-    
+    func masteredCardsCount(for deckIndex: Int) -> Int {
+        return decks[deckIndex].cards.filter { $0.mastered }.count
+    }
     func nextCard() {
         isShowingAnswer = false
         if currentCardIndex < currentDeck.cards.count - 1 {
@@ -90,10 +111,13 @@ class FlashcardGameViewModel: ObservableObject {
             // Restart from the beginning
             currentCardIndex = 0
         }
+        
+        setupAudioSession()  // Reset audio session back to playback mode
     }
     
     func previousCard() {
         isShowingAnswer = false
+        showPronunciationFeedback = false
         if currentCardIndex > 0 {
             currentCardIndex -= 1
         } else {
@@ -111,35 +135,11 @@ class FlashcardGameViewModel: ObservableObject {
         updatedDecks[selectedDeckIndex].cards[currentCardIndex].mastered = true
         decks = updatedDecks
         score += 10
+        saveUserProgress()
     }
     
-    private func setupSpeechRecognition() {
-        // Set up speech recognition
-        speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
-        
-        SFSpeechRecognizer.requestAuthorization { authStatus in
-            OperationQueue.main.addOperation {
-                switch authStatus {
-                case .authorized:
-                    print("Speech recognition authorized")
-                case .denied, .restricted, .notDetermined:
-                    print("Speech recognition not authorized")
-                @unknown default:
-                    print("Unknown authorization status")
-                }
-            }
-        }
-    }
-    
-    func startRecording() {
-        // Check if a recording is already in progress
-        if audioEngine.isRunning {
-            audioEngine.stop()
-            recognitionRequest?.endAudio()
-            isRecording = false
-            return
-        }
-        
+    // Add this method to update the speech recognizer when language changes
+    private func updateSpeechRecognizerForCurrentLanguage() {
         let language = currentDeck.language
         var localeIdentifier = "en-US"  // Default
         
@@ -149,12 +149,53 @@ class FlashcardGameViewModel: ObservableObject {
             localeIdentifier = "zh-CN"
         case "Korean":
             localeIdentifier = "ko-KR"
-        // Add more languages as needed
         default:
             localeIdentifier = "en-US"
         }
         
         speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: localeIdentifier))
+    }
+
+    private func setupSpeechRecognition() {
+        updateSpeechRecognizerForCurrentLanguage()
+            
+            // Request authorization
+            SFSpeechRecognizer.requestAuthorization { authStatus in
+                OperationQueue.main.addOperation {
+                    switch authStatus {
+                    case .authorized:
+                        print("Speech recognition authorized")
+                    case .denied:
+                        print("Speech recognition denied")
+                    case .restricted:
+                        print("Speech recognition restricted")
+                    case .notDetermined:
+                        print("Speech recognition not determined")
+                    @unknown default:
+                        print("Unknown authorization status")
+                    }
+                }
+            }
+        }
+    
+    func startRecording() {
+        // Cancel any existing timer
+        autoAdvanceTimer?.invalidate()
+        // Check if a recording is already in progress
+        if audioEngine.isRunning {
+            audioEngine.stop()
+            recognitionRequest?.endAudio()
+            isRecording = false
+            return
+        }
+        
+        // Make sure we're using the correct language
+        updateSpeechRecognizerForCurrentLanguage()
+        
+        guard let speechRecognizer = speechRecognizer, speechRecognizer.isAvailable else {
+                print("Speech recognizer is not available for the current locale")
+                return
+            }
         
         do {
             // Cancel the previous task if it's running
@@ -186,7 +227,7 @@ class FlashcardGameViewModel: ObservableObject {
             try audioEngine.start()
             
             // Start recognition
-            recognitionTask = speechRecognizer?.recognitionTask(with: recognitionRequest) { result, error in
+            recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { result, error in
                 var isFinal = false
                 
                 if let result = result {
@@ -218,24 +259,71 @@ class FlashcardGameViewModel: ObservableObject {
     }
     
     func evaluatePronunciation() {
-        // Simple evaluation by checking if the recognized text contains the term or pronunciation
-        let userPronunciation = pronunciationResult.lowercased()
-        let correctPronunciation = currentCard.pronunciation.lowercased()
-        let term = currentCard.term.lowercased()
+        let userPronunciation = pronunciationResult.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        let correctPronunciation = currentCard.pronunciation.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        let term = currentCard.term.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // Calculate similarity
-        let similarity = calculateSimilarity(between: userPronunciation, and: correctPronunciation)
+        // Check if the pronunciation is empty
+        if userPronunciation.isEmpty {
+            pronunciationFeedback = "I couldn't hear anything. Please try again."
+            showPronunciationFeedback = true
+            return
+        }
         
-        if userPronunciation.contains(term) || userPronunciation.contains(correctPronunciation) || similarity > 0.6 {
+        // Split strings into words for better comparison
+        let userWords = userPronunciation.components(separatedBy: .whitespaces)
+        let correctWords = correctPronunciation.components(separatedBy: .whitespaces)
+        let termWords = term.components(separatedBy: .whitespaces)
+        
+        // Check if user pronunciation contains any of the correct words
+        let matchedPronunciationWords = correctWords.filter { correctWord in
+            userWords.contains { $0.contains(correctWord) || correctWord.contains($0) }
+        }
+        
+        let matchedTermWords = termWords.filter { termWord in
+            userWords.contains { $0.contains(termWord) || termWord.contains($0) }
+        }
+        
+        // Calculate match percentages
+        let pronunciationMatchPercent = Double(matchedPronunciationWords.count) / Double(correctWords.count)
+        let termMatchPercent = Double(matchedTermWords.count) / Double(termWords.count)
+        
+        print("User said: \(userPronunciation)")
+        print("Correct: \(correctPronunciation)")
+        print("Match percentages - Pronunciation: \(pronunciationMatchPercent), Term: \(termMatchPercent)")
+        
+        
+        // Determine feedback based on match percentages
+        if pronunciationMatchPercent > 0.5 || termMatchPercent > 0.5 {
             pronunciationFeedback = "Great job! 🎉"
             score += 5
-        } else if similarity > 0.3 {
+            
+            // Auto-mark as mastered
+            if !currentCard.mastered {
+                markAsMastered()
+            }
+            
+            // Set timer to auto-advance to next card
+            autoAdvanceTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
+                guard let self = self else { return }
+                self.nextCard()
+            }
+        } else if pronunciationMatchPercent > 0.2 || termMatchPercent > 0.2 {
             pronunciationFeedback = "Getting closer! Try again."
         } else {
             pronunciationFeedback = "Keep practicing! Try to say: \(correctPronunciation)"
         }
         
         showPronunciationFeedback = true
+        
+    // Auto-hide feedback after 3 seconds
+       DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+           withAnimation {
+               self.showPronunciationFeedback = false
+           }
+       }
+        
+        setupAudioSession()  // Reset audio session back to playback mode
     }
     
     private func calculateSimilarity(between string1: String, and string2: String) -> Double {
@@ -247,5 +335,132 @@ class FlashcardGameViewModel: ObservableObject {
         let union = set1.union(set2).count
         
         return Double(intersection) / Double(union)
+    }
+    
+    
+    // MARK: - User Login and Progress Tracking
+    
+    func login(email: String, password: String, completion: @escaping (Bool, String?) -> Void) {
+        // For demo, we're using a simple authentication
+        // In a real app, you'd use Firebase or another auth service
+        if email.contains("@") && password.count >= 6 {
+            isLoggedIn = true
+            username = email.components(separatedBy: "@").first ?? "User"
+            loadUserProgress()
+            completion(true, nil)
+        } else {
+            completion(false, "Invalid email or password (must be 6+ characters)")
+        }
+    }
+    
+    func signUp(email: String, password: String, completion: @escaping (Bool, String?) -> Void) {
+        // For demo purposes
+        if email.contains("@") && password.count >= 6 {
+            isLoggedIn = true
+            username = email.components(separatedBy: "@").first ?? "User"
+            completion(true, nil)
+        } else {
+            completion(false, "Invalid email or password (must be 6+ characters)")
+        }
+    }
+    
+    func logout() {
+        isLoggedIn = false
+        username = ""
+    }
+    
+    private func checkLoginStatus() {
+        // In a real app, check if the user is logged in using your auth provider
+        isLoggedIn = UserDefaults.standard.bool(forKey: "isLoggedIn")
+        username = UserDefaults.standard.string(forKey: "username") ?? ""
+        
+        if isLoggedIn {
+            loadUserProgress()
+        }
+    }
+    
+    // Save and load user progress (mastered cards)
+    private func saveUserProgress() {
+        guard isLoggedIn else { return }
+        
+        // In a real app, you would save to a backend service
+        // For now, we'll use UserDefaults as a simple demonstration
+        
+        var masteredCardIDs: [String: [String]] = [:]
+        
+        for (index, deck) in decks.enumerated() {
+            let deckKey = "\(deck.language)_\(index)"
+            let masteredIDs = deck.cards.filter { $0.mastered }.map { $0.id.uuidString }
+            masteredCardIDs[deckKey] = masteredIDs
+        }
+        
+        if let encoded = try? JSONEncoder().encode(masteredCardIDs) {
+            UserDefaults.standard.set(encoded, forKey: "masteredCards_\(username)")
+        }
+        
+        // Save score
+        UserDefaults.standard.set(score, forKey: "score_\(username)")
+    }
+    
+    private func loadUserProgress() {
+        guard isLoggedIn else { return }
+        
+        // Load mastered cards
+        if let savedData = UserDefaults.standard.data(forKey: "masteredCards_\(username)"),
+           let masteredCardIDs = try? JSONDecoder().decode([String: [String]].self, from: savedData) {
+            
+            var updatedDecks = decks
+            
+            for (index, deck) in updatedDecks.enumerated() {
+                let deckKey = "\(deck.language)_\(index)"
+                
+                if let masteredIDs = masteredCardIDs[deckKey] {
+                    for i in 0..<deck.cards.count {
+                        let cardID = deck.cards[i].id.uuidString
+                        if masteredIDs.contains(cardID) {
+                            updatedDecks[index].cards[i].mastered = true
+                        }
+                    }
+                }
+            }
+            
+            decks = updatedDecks
+        }
+        
+        // Load score
+        score = UserDefaults.standard.integer(forKey: "score_\(username)")
+    }
+    
+
+    func setupAudioSession() {
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: .mixWithOthers)
+            try AVAudioSession.sharedInstance().setActive(true)
+            print("Audio session successfully set up for playback")
+        } catch {
+            print("Failed to set up audio session: \(error.localizedDescription)")
+        }
+    }
+
+    func speakPronunciation() {
+        
+        let language = currentDeck.language
+        let utterance = AVSpeechUtterance(string: currentCard.pronunciation)
+        
+        switch language {
+        case "Chinese":
+            utterance.voice = AVSpeechSynthesisVoice(language: "zh-CN")
+        case "Korean":
+            utterance.voice = AVSpeechSynthesisVoice(language: "ko-KR")
+        default:
+            utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+        }
+        
+        // Add these lines for debugging
+        print("Voice: \(utterance.voice?.language ?? "No voice")")
+        print("Speaking text: \(utterance.speechString)")
+        
+        
+        speechSynthesizer.speak(utterance)
     }
 }
