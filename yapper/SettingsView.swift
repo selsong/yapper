@@ -23,13 +23,12 @@ final class SettingsViewModel: ObservableObject {
 struct SettingsView: View {
     @StateObject private var viewModel = SettingsViewModel()
     @EnvironmentObject var loginViewModel: LoginViewModel
-    
-    
     @State private var showEmailPasswordFields = false
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var showAlert = false
     @State private var alertMessage = ""
+    
     // State to track error and success messages
     @State private var statusMessage: String? = nil
     @State private var isSuccess: Bool = false
@@ -75,17 +74,7 @@ struct SettingsView: View {
                             .padding()
                         
                         Button(action: {
-                            
-                            do{
-                                reauthenticateAndDeleteAccount()
-                                statusMessage = "Account deleted Successfully"
-                                isSuccess = true
-                            }
-                            catch{
-                                statusMessage = "Error during account deletion"
-                                isSuccess = false
-                            }
-                            
+                            reauthenticateAndDeleteAccount()
                         }) {
                             if viewModel.isLoading {
                                 ProgressView()
@@ -111,8 +100,7 @@ struct SettingsView: View {
                                 .padding(.top, 10)
                             
                             // Display instructions to log out and log back in if error occurs
-                            
-                            if (!isSuccess){
+                            if !isSuccess {
                                 Text("If the error persists, log out and log back in.")
                                     .font(.subheadline)
                                     .foregroundColor(.gray)
@@ -124,12 +112,18 @@ struct SettingsView: View {
             }
             .navigationBarTitle("Settings", displayMode: .inline)
             .alert(isPresented: $showAlert) {
-                    Alert(
-                        title: Text(isSuccess ? "Success" : "Error"),
-                        message: Text(alertMessage),
-                        dismissButton: .default(Text("OK"))
-                    )
-                }
+                Alert(
+                    title: Text(isSuccess ? "Success" : "Error"),
+                    message: Text(alertMessage),
+                    dismissButton: .default(Text("OK"))
+                )
+            }
+        }
+        .onChange(of: navigateToLogin) { _ in
+            if navigateToLogin {
+                // Navigate to the login screen after account deletion or logout
+                NavigationLink("", destination: RootView(), isActive: $navigateToLogin)
+            }
         }
     }
     
@@ -141,16 +135,15 @@ struct SettingsView: View {
             do {
                 try await viewModel.deleteAccount(email: email, password: password)
                 viewModel.isLoading = false
+                statusMessage = "Account deleted successfully."
+                isSuccess = true
                 navigateToLogin = true
             } catch {
                 viewModel.isLoading = false
-                viewModel.errorMessage = "Failed to delete account: \(error.localizedDescription)"
-                alertMessage = viewModel.errorMessage ?? "An unknown error occurred"
+                statusMessage = "Failed to delete account: \(error.localizedDescription)"
+                isSuccess = false
                 showAlert = true
             }
-            
-            // Navigation to the LoginView when successful logout or account deletion
-            NavigationLink("", destination: RootView(), isActive: $navigateToLogin)
         }
     }
 }
