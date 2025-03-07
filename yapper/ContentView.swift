@@ -143,7 +143,7 @@ struct FlashcardView: View {
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color.white)
                 .shadow(radius: 10)
-                .frame(width: 300, height: 350)
+                .frame(width: 300, height: 400)
             
             VStack(spacing: 20) {
                 // Progress indicator
@@ -176,6 +176,16 @@ struct FlashcardView: View {
                         .font(.headline)
                         .foregroundColor(.black)
                     
+                    // ADD SPEAKER
+                    Button(action: {
+                            viewModel.speakPronunciation()  // Call the method to speak pronunciation
+                        }) {
+                            Image(systemName: "speaker.wave.2.fill")  // Use speaker icon
+                                .resizable()
+                                .frame(width: 24, height: 24)
+                                .foregroundColor(.blue)
+                        }
+                                    
                     Text(viewModel.currentCard.meaning)
                         .font(.body)
                         .foregroundColor(.gray)
@@ -214,7 +224,7 @@ struct FlashcardView: View {
                 }
             }
             .padding()
-            .frame(width: 300, height: 350)
+            .frame(width: 300, height: 400)
             .onTapGesture {
                 withAnimation {
                     viewModel.toggleAnswer()

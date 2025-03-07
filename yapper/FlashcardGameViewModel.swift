@@ -26,7 +26,7 @@ class FlashcardGameViewModel: ObservableObject {
     @Published var isLoggedIn: Bool = false
     @Published var username: String = ""
         
-    
+    private var speechSynthesizer = AVSpeechSynthesizer()
     private var speechRecognizer: SFSpeechRecognizer?
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
@@ -80,6 +80,7 @@ class FlashcardGameViewModel: ObservableObject {
         ]
         
         setupSpeechRecognition()
+        setupAudioSession()
         // Add observer for deck changes
                 self.$selectedDeckIndex.sink { [weak self] _ in
                     self?.updateSpeechRecognizerForCurrentLanguage()
@@ -110,6 +111,8 @@ class FlashcardGameViewModel: ObservableObject {
             // Restart from the beginning
             currentCardIndex = 0
         }
+        
+        setupAudioSession()  // Reset audio session back to playback mode
     }
     
     func previousCard() {
@@ -319,6 +322,8 @@ class FlashcardGameViewModel: ObservableObject {
                self.showPronunciationFeedback = false
            }
        }
+        
+        setupAudioSession()  // Reset audio session back to playback mode
     }
     
     private func calculateSimilarity(between string1: String, and string2: String) -> Double {
@@ -424,5 +429,38 @@ class FlashcardGameViewModel: ObservableObject {
         
         // Load score
         score = UserDefaults.standard.integer(forKey: "score_\(username)")
+    }
+    
+
+    func setupAudioSession() {
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: .mixWithOthers)
+            try AVAudioSession.sharedInstance().setActive(true)
+            print("Audio session successfully set up for playback")
+        } catch {
+            print("Failed to set up audio session: \(error.localizedDescription)")
+        }
+    }
+
+    func speakPronunciation() {
+        
+        let language = currentDeck.language
+        let utterance = AVSpeechUtterance(string: currentCard.pronunciation)
+        
+        switch language {
+        case "Chinese":
+            utterance.voice = AVSpeechSynthesisVoice(language: "zh-CN")
+        case "Korean":
+            utterance.voice = AVSpeechSynthesisVoice(language: "ko-KR")
+        default:
+            utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+        }
+        
+        // Add these lines for debugging
+        print("Voice: \(utterance.voice?.language ?? "No voice")")
+        print("Speaking text: \(utterance.speechString)")
+        
+        
+        speechSynthesizer.speak(utterance)
     }
 }
