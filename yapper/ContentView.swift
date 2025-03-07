@@ -65,7 +65,7 @@ struct ContentView: View {
 //                            .foregroundColor(.white)
 //                    },
                 trailing:
-                    NavigationLink(destination: SettingsView(showSignInView: $showLogin)) {
+                    NavigationLink(destination: SettingsView()) {
                         Image(systemName: "gear")
                             .foregroundColor(.white)
                     }

@@ -31,6 +31,7 @@ final class LoginViewModel: ObservableObject {
             }
         }
     }
+
 }
 
 struct LoginView: View {
