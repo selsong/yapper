@@ -11,74 +11,126 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var viewModel = FlashcardGameViewModel()
-    @State private var showLogin = true
+    @State private var showOnboarding: Bool = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") == false
+    @State private var selectedDeck: LanguageDeck? = nil
+    
     
     var body: some View {
         NavigationView {
             ZStack {
                 Color("BackgroundColor")
                     .edgesIgnoringSafeArea(.all)
-                
-                VStack {
-                    // Toast notification for pronunciation feedback
-                    if viewModel.showPronunciationFeedback {
-                        ToastView(message: viewModel.pronunciationFeedback, isSuccess: viewModel.pronunciationFeedback.contains("Great"))
-                    }
+                if showOnboarding {
+                    DeckSelectionView(viewModel: viewModel, showOnboarding: $showOnboarding, selectedDeck: $selectedDeck)
                     
-                    HStack {
-                        Text("Score: \(viewModel.score)")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding(.horizontal)
+                } else {
+                    
+                    VStack {
+                        // Toast notification for pronunciation feedback
+                        if viewModel.showPronunciationFeedback {
+                            ToastView(message: viewModel.pronunciationFeedback, isSuccess: viewModel.pronunciationFeedback.contains("Great"))
+                        }
+                        
+                        HStack {
+                            Text("Score: \(viewModel.score)")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding(.horizontal)
+                            
+                            Spacer()
+                            
+                            Button(action: {
+                                // Reset score
+                                viewModel.score = 0
+                            }) {
+                                Image(systemName: "arrow.counterclockwise")
+                                    .foregroundColor(.white)
+                                    .padding()
+                            }
+                        }
+                        .padding(.top)
+                        
+                        DeckSelectorView(viewModel: viewModel)
                         
                         Spacer()
                         
-                        Button(action: {
-                            // Reset score
-                            viewModel.score = 0
-                        }) {
-                            Image(systemName: "arrow.counterclockwise")
-                                .foregroundColor(.white)
-                                .padding()
-                        }
+                        FlashcardView(viewModel: viewModel)
+                        
+                        Spacer()
+                        
+                        ControlsView(viewModel: viewModel)
                     }
-                    .padding(.top)
-                    
-                    DeckSelectorView(viewModel: viewModel)
-                    
-                    Spacer()
-                    
-                    FlashcardView(viewModel: viewModel)
-                    
-                    Spacer()
-                    
-                    ControlsView(viewModel: viewModel)
                 }
             }
             .navigationBarTitle("Slang Flashcards", displayMode: .inline)
             .navigationBarItems(
-//                leading:
-//                    Button(action: {
-//                        showLogin = true
-//                    }) {
-//                        Image(systemName: "person.circle")
-//                            .foregroundColor(.white)
-//                    },
                 trailing:
                     NavigationLink(destination: SettingsView()) {
                         Image(systemName: "gear")
                             .foregroundColor(.white)
                     }
             )
-//            .sheet(isPresented: $showLogin) {
-//                LoginView(isPresented: $showLogin, viewModel: viewModel)
-//            }
         }
         .accentColor(.white)
         .preferredColorScheme(.dark)
     }
 }
 
+// MARK: - Deck Selection Screen
+struct DeckSelectionView: View {
+    @ObservedObject var viewModel: FlashcardGameViewModel
+    @Binding var showOnboarding: Bool
+    @Binding var selectedDeck: LanguageDeck?
+    
+
+    
+    var body: some View {
+        VStack {
+            Text("Choose a Deck")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+                .padding(.bottom, 20)
+            
+            ForEach(viewModel.decks) { deck in
+                Button(action: {
+                    selectedDeck = deck
+                    viewModel.selectedDeckIndex = viewModel.decks.firstIndex(where: { $0.id == deck.id }) ?? 0
+                    //onboarding done
+                    showOnboarding = false
+                    UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+                }) {
+                    HStack {
+                        Text("\(deck.flagEmoji) \(deck.language)")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 12)
+                        
+                        Spacer()
+                        
+                        Text("\(viewModel.masteredCardsCount(for: viewModel.decks.firstIndex(where: { $0.id == deck.id }) ?? 0))/\(deck.cards.count) Mastered")
+                            .font(.subheadline)
+                            .foregroundColor(.white.opacity(0.8))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 12)
+                    .background(Color("BackgroundColor"))  // Navy blue background
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.white, lineWidth: 1.5)  // White outline
+                    )
+                    .cornerRadius(8)
+                    .padding(.horizontal)
+                    .padding(.vertical, 4)
+                }
+            }
+        }
+        .transition(.opacity)
+        .padding()
+    }
+}
 
 // Separate DeckSelector into its own view
 struct DeckSelectorView: View {

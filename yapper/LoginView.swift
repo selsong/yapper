@@ -24,6 +24,9 @@ final class LoginViewModel: ObservableObject {
                 print("Account created with UID: \(authResult.uid)")
                 isLoggedIn = true
                 showError = false
+                UserDefaults.standard.set(false, forKey: "hasCompletedOnboarding")
+                            // Mark that this user now exists
+                
             } catch {
                 // Handle any errors (e.g., email already in use)
                 errorMessage = error.localizedDescription
@@ -61,9 +64,11 @@ struct LoginView: View {
                             .autocapitalization(.none)
                             .keyboardType(.emailAddress)
                             .padding(.bottom, 10)
+                            .foregroundColor(.white)
                         
                         SecureField("Password", text: $viewModel.password)
                             .textFieldStyle(RoundedTextFieldStyle())
+                            .foregroundColor(.white)
                     }
                     .padding(.horizontal, 25)
                     
