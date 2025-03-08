@@ -73,9 +73,40 @@ class FlashcardGameViewModel: ObservableObject {
                     SlangCard(term: "太油了", pronunciation: "tài yóu le", meaning: "Greasy", example: "Reference to unkempt middle-aged men"),
                     SlangCard(term: "笔芯", pronunciation: "bǐ xīn", meaning: "Love you", example: "A cute way of saying 'love you' (sounds like 'bless you')"),
                     SlangCard(term: "太可了", pronunciation: "tài kě le", meaning: "Super cute", example: "This outfit is 太可了!"),
-                    SlangCard(term: "绝绝子", pronunciation: "jué jué zi", meaning: "Absolutely amazing", example: "This restaurant is 绝绝子!")
-                ]
-            )
+                    SlangCard(term: "绝绝子", pronunciation: "jué jué zi", meaning: "Absolutely amazing", example: "This restaurant is 绝绝子!"),
+                    SlangCard(term: "无缘无故", pronunciation: "wú yuán wú gù", meaning: "for no reason", example: "Why are you 无缘无故 (ignoring me) 不理我 ?")
+                ]),
+            
+            LanguageDeck(
+                language: "Spanish",
+                flagEmoji: "🇪🇸",
+                cards: [
+                    SlangCard(term: "Guay", pronunciation: "Gwhy", meaning: "Cool, awesome", example: "Ese coche es súper guay. (That car is super cool.)"),
+                    SlangCard(term: "Chido", pronunciation: "Chee-do", meaning: "Cool (Mexico)", example: "Esa canción está bien chida. (That song is really cool.)"),
+                    SlangCard(term: "Vale", pronunciation: "Bah-leh", meaning: "Okay, got it (Spain)", example: "Vale, nos vemos a las ocho. (Okay, see you at eight.)"),
+                    SlangCard(term: "No mames", pronunciation: "No mah-mehs", meaning: "No way! (Mexico)", example: "¡No mames! ¿En serio? (No way! Seriously?)"),
+                    SlangCard(term: "Tío/Tía", pronunciation: "Tee-oh / Tee-ah", meaning: "Dude (Spain)", example: "¿Qué pasa, tío? (What's up, dude?)"),
+                    SlangCard(term: "Flipar", pronunciation: "Flee-par", meaning: "Freak out, be amazed (Spain)", example: "Vas a flipar con esta película. (You're going to freak out with this movie.)"),
+                    SlangCard(term: "Chamba", pronunciation: "Chahm-bah", meaning: "Job, work (Latin America)", example: "Tengo mucha chamba hoy. (I have a lot of work today.)"),
+                    SlangCard(term: "Estar en la luna", pronunciation: "Es-tar en la loo-nah", meaning: "To be spaced out", example: "Hoy en clase estaba en la luna. (I was spaced out in class today.)"),
+                    SlangCard(term: "Pana", pronunciation: "Pah-nah", meaning: "Friend, buddy (Venezuela)", example: "Ese pana siempre me ayuda. (That buddy always helps me.)"),
+                    SlangCard(term: "Hacer la vista gorda", pronunciation: "Ah-ser lah vees-tah gor-dah", meaning: "Turn a blind eye", example: "El profe hizo la vista gorda con la tarea. (The teacher turned a blind eye to the homework.)")
+                ]),
+//            LanguageDeck(
+//                language: "Japanese",
+//                flagEmoji: "🇯🇵",
+//                cards: [
+//                    SlangCard(term: "やばい", pronunciation: "Yabai", meaning: "Amazing, dangerous, or crazy", example: "このラーメン、やばいほど美味しい！ (This ramen is insanely good!)"),
+//                    SlangCard(term: "ウザい", pronunciation: "Uzai", meaning: "Annoying", example: "あいつ、マジでウザい！ (That guy is seriously annoying!)"),
+//                    SlangCard(term: "ガチ", pronunciation: "Gachi", meaning: "Serious, legit", example: "ガチで勉強しないとやばい！ (I seriously need to study!)"),
+//                    SlangCard(term: "キモい", pronunciation: "Kimoi", meaning: "Gross, creepy", example: "あの虫、キモい！ (That bug is gross!)"),
+//                    SlangCard(term: "テンション上がる", pronunciation: "Tenshon agaru", meaning: "Get hyped/excited", example: "この曲聞くとテンション上がる！ (This song gets me hyped!)"),
+//                    SlangCard(term: "バカ", pronunciation: "Baka", meaning: "Idiot, fool", example: "なんでそんなことするの？バカじゃない？ (Why would you do that? Are you an idiot?)"),
+//                    SlangCard(term: "ノリノリ", pronunciation: "Nori-nori", meaning: "Super enthusiastic", example: "彼、パーティーでノリノリだったよ！ (He was super into the party!)"),
+//                    SlangCard(term: "ダサい", pronunciation: "Dasai", meaning: "Uncool, lame", example: "その服、ちょっとダサくない？ (Aren’t those clothes a bit uncool?)"),
+//                    SlangCard(term: "エモい", pronunciation: "Emoi", meaning: "Emotional, nostalgic", example: "この映画、エモいわ... (This movie is so emotional...)"),
+//                    SlangCard(term: "マジ", pronunciation: "Maji", meaning: "Seriously", example: "マジで！？信じられない！ (Seriously!? I can't believe it!)")
+//                ])
         ]
         
         setupSpeechRecognition()
@@ -148,6 +179,10 @@ class FlashcardGameViewModel: ObservableObject {
             localeIdentifier = "zh-CN"
         case "Korean":
             localeIdentifier = "ko-KR"
+        case "Japanese":
+            localeIdentifier = "ja-JP"
+        case "Spanish":
+            localeIdentifier = "es-ES"
         default:
             localeIdentifier = "en-US"
         }
@@ -442,15 +477,19 @@ class FlashcardGameViewModel: ObservableObject {
     }
 
     func speakPronunciation() {
-        
         let language = currentDeck.language
-        let utterance = AVSpeechUtterance(string: currentCard.pronunciation)
+        var textToSpeak = currentCard.term
+        let utterance = AVSpeechUtterance(string: textToSpeak)
         
         switch language {
         case "Chinese":
             utterance.voice = AVSpeechSynthesisVoice(language: "zh-CN")
         case "Korean":
             utterance.voice = AVSpeechSynthesisVoice(language: "ko-KR")
+        case "Japanese":
+            utterance.voice = AVSpeechSynthesisVoice(language: "ja-JP")
+        case "Spanish":
+            utterance.voice = AVSpeechSynthesisVoice(language: "es-ES")
         default:
             utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
         }
@@ -458,7 +497,6 @@ class FlashcardGameViewModel: ObservableObject {
         // Add these lines for debugging
         print("Voice: \(utterance.voice?.language ?? "No voice")")
         print("Speaking text: \(utterance.speechString)")
-        
         
         speechSynthesizer.speak(utterance)
     }
