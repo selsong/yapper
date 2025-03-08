@@ -92,21 +92,21 @@ class FlashcardGameViewModel: ObservableObject {
                     SlangCard(term: "Pana", pronunciation: "Pah-nah", meaning: "Friend, buddy (Venezuela)", example: "Ese pana siempre me ayuda. (That buddy always helps me.)"),
                     SlangCard(term: "Hacer la vista gorda", pronunciation: "Ah-ser lah vees-tah gor-dah", meaning: "Turn a blind eye", example: "El profe hizo la vista gorda con la tarea. (The teacher turned a blind eye to the homework.)")
                 ]),
-            LanguageDeck(
-                language: "Japanese",
-                flagEmoji: "🇯🇵",
-                cards: [
-                    SlangCard(term: "やばい", pronunciation: "Yabai", meaning: "Amazing, dangerous, or crazy", example: "このラーメン、やばいほど美味しい！ (This ramen is insanely good!)"),
-                    SlangCard(term: "ウザい", pronunciation: "Uzai", meaning: "Annoying", example: "あいつ、マジでウザい！ (That guy is seriously annoying!)"),
-                    SlangCard(term: "ガチ", pronunciation: "Gachi", meaning: "Serious, legit", example: "ガチで勉強しないとやばい！ (I seriously need to study!)"),
-                    SlangCard(term: "キモい", pronunciation: "Kimoi", meaning: "Gross, creepy", example: "あの虫、キモい！ (That bug is gross!)"),
-                    SlangCard(term: "テンション上がる", pronunciation: "Tenshon agaru", meaning: "Get hyped/excited", example: "この曲聞くとテンション上がる！ (This song gets me hyped!)"),
-                    SlangCard(term: "バカ", pronunciation: "Baka", meaning: "Idiot, fool", example: "なんでそんなことするの？バカじゃない？ (Why would you do that? Are you an idiot?)"),
-                    SlangCard(term: "ノリノリ", pronunciation: "Nori-nori", meaning: "Super enthusiastic", example: "彼、パーティーでノリノリだったよ！ (He was super into the party!)"),
-                    SlangCard(term: "ダサい", pronunciation: "Dasai", meaning: "Uncool, lame", example: "その服、ちょっとダサくない？ (Aren’t those clothes a bit uncool?)"),
-                    SlangCard(term: "エモい", pronunciation: "Emoi", meaning: "Emotional, nostalgic", example: "この映画、エモいわ... (This movie is so emotional...)"),
-                    SlangCard(term: "マジ", pronunciation: "Maji", meaning: "Seriously", example: "マジで！？信じられない！ (Seriously!? I can't believe it!)")
-                ])
+//            LanguageDeck(
+//                language: "Japanese",
+//                flagEmoji: "🇯🇵",
+//                cards: [
+//                    SlangCard(term: "やばい", pronunciation: "Yabai", meaning: "Amazing, dangerous, or crazy", example: "このラーメン、やばいほど美味しい！ (This ramen is insanely good!)"),
+//                    SlangCard(term: "ウザい", pronunciation: "Uzai", meaning: "Annoying", example: "あいつ、マジでウザい！ (That guy is seriously annoying!)"),
+//                    SlangCard(term: "ガチ", pronunciation: "Gachi", meaning: "Serious, legit", example: "ガチで勉強しないとやばい！ (I seriously need to study!)"),
+//                    SlangCard(term: "キモい", pronunciation: "Kimoi", meaning: "Gross, creepy", example: "あの虫、キモい！ (That bug is gross!)"),
+//                    SlangCard(term: "テンション上がる", pronunciation: "Tenshon agaru", meaning: "Get hyped/excited", example: "この曲聞くとテンション上がる！ (This song gets me hyped!)"),
+//                    SlangCard(term: "バカ", pronunciation: "Baka", meaning: "Idiot, fool", example: "なんでそんなことするの？バカじゃない？ (Why would you do that? Are you an idiot?)"),
+//                    SlangCard(term: "ノリノリ", pronunciation: "Nori-nori", meaning: "Super enthusiastic", example: "彼、パーティーでノリノリだったよ！ (He was super into the party!)"),
+//                    SlangCard(term: "ダサい", pronunciation: "Dasai", meaning: "Uncool, lame", example: "その服、ちょっとダサくない？ (Aren’t those clothes a bit uncool?)"),
+//                    SlangCard(term: "エモい", pronunciation: "Emoi", meaning: "Emotional, nostalgic", example: "この映画、エモいわ... (This movie is so emotional...)"),
+//                    SlangCard(term: "マジ", pronunciation: "Maji", meaning: "Seriously", example: "マジで！？信じられない！ (Seriously!? I can't believe it!)")
+//                ])
         ]
         
         setupSpeechRecognition()
@@ -179,6 +179,10 @@ class FlashcardGameViewModel: ObservableObject {
             localeIdentifier = "zh-CN"
         case "Korean":
             localeIdentifier = "ko-KR"
+        case "Japanese":
+            localeIdentifier = "ja-JP"
+        case "Spanish":
+            localeIdentifier = "es-ES"
         default:
             localeIdentifier = "en-US"
         }

@@ -11,9 +11,8 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var viewModel = FlashcardGameViewModel()
-    @State private var showOnboarding: Bool = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") == false
+    @State private var showOnboarding: Bool = true
     @State private var selectedDeck: LanguageDeck? = nil
-    
     
     var body: some View {
         NavigationView {
@@ -96,9 +95,8 @@ struct DeckSelectionView: View {
                 Button(action: {
                     selectedDeck = deck
                     viewModel.selectedDeckIndex = viewModel.decks.firstIndex(where: { $0.id == deck.id }) ?? 0
-                    //onboarding done
+                    
                     showOnboarding = false
-                    UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
                 }) {
                     HStack {
                         Text("\(deck.flagEmoji) \(deck.language)")

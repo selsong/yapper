@@ -24,8 +24,7 @@ final class LoginViewModel: ObservableObject {
                 print("Account created with UID: \(authResult.uid)")
                 isLoggedIn = true
                 showError = false
-                UserDefaults.standard.set(false, forKey: "hasCompletedOnboarding")
-                            // Mark that this user now exists
+                
                 
             } catch {
                 // Handle any errors (e.g., email already in use)
