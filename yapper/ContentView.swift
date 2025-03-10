@@ -50,6 +50,10 @@ struct ContentView: View {
                         .padding(.top)
                         
                         DeckSelectorView(viewModel: viewModel)
+                        // Add translation language selector for English deck only
+                        if viewModel.currentDeck.language == "English" {
+                            TranslationLanguageSelectorView(viewModel: viewModel)
+                        }
                         
                         Spacer()
                         
@@ -156,9 +160,42 @@ struct DeckSelectorView: View {
         .background(Color("AccentColor").opacity(0.3))
         .cornerRadius(10)
         .padding(.horizontal)
-//
     }
 }
+
+struct TranslationLanguageSelectorView: View {
+    @ObservedObject var viewModel: FlashcardGameViewModel
+    
+    var body: some View {
+        HStack {
+            Text("Reference Language:")
+                .font(.subheadline)
+                .foregroundColor(.white)
+                .padding(.leading)
+            
+            Picker("Translation Language", selection: $viewModel.selectedTranslationLanguage) {
+                            ForEach(FlashcardGameViewModel.TranslationLanguage.allCases, id: \.self) { language in
+                                Text(language.rawValue)
+                                    .foregroundColor(.white)
+                                    .tag(language)
+                            }
+                        }
+            .pickerStyle(MenuPickerStyle())
+            .accentColor(.white)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.white.opacity(0.6), lineWidth: 1)
+            )
+            .padding(.trailing)
+            
+            Spacer()
+        }
+        .padding(.horizontal)
+        .padding(.top, 5)
+        .padding(.bottom, 10)
+    }
+}
+
 
 
 // Create a toast notification view
@@ -215,32 +252,57 @@ struct FlashcardView: View {
                     .foregroundColor(Color("FeatureColor"))
                 
                 if viewModel.isShowingAnswer {
+                    // Term is always shown in the answer view
                     Text(viewModel.currentCard.term)
                         .font(.title)
                         .fontWeight(.bold)
                         .foregroundColor(Color("FeatureColor"))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
+                        .lineLimit(nil) // Allow full wrapping
+                        .frame(maxWidth: 260) // Prevent overflow
+                        .padding(.horizontal)
                     
-                    Text("Pronunciation: \(viewModel.currentCard.pronunciation)")
-                        .font(.headline)
-                        .foregroundColor(.black)
-                    
-                    // ADD SPEAKER
-                    Button(action: {
-                            viewModel.speakPronunciation()  // Call the method to speak pronunciation
+// Show pronunciation if available
+//
+//                        Text("Pronunciation: \(pronunciation)")
+//                            .font(.headline)
+//                            .foregroundColor(.black)
+                        
+                        Button(action: {
+                            viewModel.speakPronunciation()
                         }) {
-                            Image(systemName: "speaker.wave.2.fill")  // Use speaker icon
+                            Image(systemName: "speaker.wave.2.fill")
                                 .resizable()
                                 .frame(width: 24, height: 24)
                                 .foregroundColor(.blue)
                         }
-                                    
-                    Text(viewModel.currentCard.meaning)
-                        .font(.body)
-                        .foregroundColor(.gray)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
+                    
+                    
+                    // Always show English meaning for non-English decks
+                    if viewModel.currentDeck.language != "English" {
+                        Text(viewModel.currentCard.meaning)
+                            .font(.body)
+                            .foregroundColor(.gray)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    } else {
+                        // For English decks, show meaning based on selected language
+                        if viewModel.selectedTranslationLanguage == .english {
+                            Text(viewModel.currentCard.meaning)
+                                .font(.body)
+                                .foregroundColor(.gray)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                        } else if let translations = viewModel.currentCard.translations,
+                                  let translation = translations[viewModel.selectedTranslationLanguage.rawValue] {
+                            Text(translation)
+                                .font(.body)
+                                .foregroundColor(.gray)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                        }
+                    }
                     
                     Text("Example: \(viewModel.currentCard.example)")
                         .font(.caption)
@@ -249,12 +311,42 @@ struct FlashcardView: View {
                         .padding(.horizontal)
                     
                 } else {
-                    Text(viewModel.currentCard.meaning)
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(Color("FeatureColor"))
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
+                    // Question side of the card
+                    if viewModel.currentDeck.language != "English" {
+                        // For non-English decks, always show the English meaning
+                        Text(viewModel.currentCard.meaning)
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .foregroundColor(Color("FeatureColor"))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    } else {
+                        // For English decks, show the meaning based on selected language
+                        if viewModel.selectedTranslationLanguage == .english {
+                            Text(viewModel.currentCard.meaning)
+                                .font(.title)
+                                .fontWeight(.bold)
+                                .foregroundColor(Color("FeatureColor"))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                        } else if let translations = viewModel.currentCard.translations,
+                                  let translation = translations[viewModel.selectedTranslationLanguage.rawValue] {
+                            Text(translation)
+                                .font(.title)
+                                .fontWeight(.bold)
+                                .foregroundColor(Color("FeatureColor"))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                        } else {
+                            // Fallback to English if translation not available
+                            Text(viewModel.currentCard.meaning)
+                                .font(.title)
+                                .fontWeight(.bold)
+                                .foregroundColor(Color("FeatureColor"))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                        }
+                    }
                     
                     Text("Tap to reveal")
                         .font(.caption)
@@ -283,8 +375,10 @@ struct FlashcardView: View {
             .gesture(
                 DragGesture()
                     .onEnded { value in
-                        if value.translation.width < 0 { // Swipe left (next card)
+                        if value.translation.width < -50 { // Swipe left (next card)
                             viewModel.nextCard()
+                        } else if value.translation.width > 50 { // Swipe right (previous card)
+                            viewModel.previousCard()
                         }
                     }
             )

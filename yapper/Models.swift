@@ -16,6 +16,22 @@ struct SlangCard: Identifiable, Equatable {
     let meaning: String
     let example: String
     var mastered: Bool = false
+    // Option 1: Single optional translation
+    let translation: String?
+    // Option 2: Dictionary of translations keyed by language
+    let translations: [String: String]?
+    
+    // Initialize with both translation options as nil by default
+    init(term: String, pronunciation: String, meaning: String, example: String,
+         translation: String? = nil, translations: [String: String]? = nil, mastered: Bool = false) {
+        self.term = term
+        self.pronunciation = pronunciation
+        self.meaning = meaning
+        self.example = example
+        self.mastered = mastered
+        self.translation = translation
+        self.translations = translations
+    }
 }
 
 struct LanguageDeck: Identifiable {
