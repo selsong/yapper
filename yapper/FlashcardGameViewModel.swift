@@ -25,6 +25,7 @@ class FlashcardGameViewModel: ObservableObject {
     @Published var showPronunciationFeedback: Bool = false
     @Published var isLoggedIn: Bool = false
     @Published var username: String = ""
+    @Published var selectedTranslationLanguage: TranslationLanguage = .english
         
     private var speechSynthesizer = AVSpeechSynthesizer()
     private var speechRecognizer: SFSpeechRecognizer?
@@ -34,7 +35,12 @@ class FlashcardGameViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private var autoAdvanceTimer: Timer?
 
-    
+    enum TranslationLanguage: String, CaseIterable {
+        case english = "English"
+        case korean = "Korean"
+        case chinese = "Chinese"
+        case spanish = "Spanish"
+    }
     init() {
         // Initialize with sample data
         self.decks = [
@@ -81,32 +87,217 @@ class FlashcardGameViewModel: ObservableObject {
                 language: "Spanish",
                 flagEmoji: "🇪🇸",
                 cards: [
-                    SlangCard(term: "Guay", pronunciation: "Gwhy", meaning: "Cool, awesome", example: "Ese coche es súper guay. (That car is super cool.)"),
+                    SlangCard(
+                        term: "Genial",
+                        pronunciation: "Heh-nee-al",
+                        meaning: "Cool, awesome, great",
+                        example: "Ese concierto fue genial. (That concert was awesome.)"
+                    ),
                     SlangCard(term: "Chido", pronunciation: "Chee-do", meaning: "Cool (Mexico)", example: "Esa canción está bien chida. (That song is really cool.)"),
                     SlangCard(term: "Vale", pronunciation: "Bah-leh", meaning: "Okay, got it (Spain)", example: "Vale, nos vemos a las ocho. (Okay, see you at eight.)"),
                     SlangCard(term: "No mames", pronunciation: "No mah-mehs", meaning: "No way! (Mexico)", example: "¡No mames! ¿En serio? (No way! Seriously?)"),
-                    SlangCard(term: "Tío/Tía", pronunciation: "Tee-oh / Tee-ah", meaning: "Dude (Spain)", example: "¿Qué pasa, tío? (What's up, dude?)"),
                     SlangCard(term: "Flipar", pronunciation: "Flee-par", meaning: "Freak out, be amazed (Spain)", example: "Vas a flipar con esta película. (You're going to freak out with this movie.)"),
                     SlangCard(term: "Chamba", pronunciation: "Chahm-bah", meaning: "Job, work (Latin America)", example: "Tengo mucha chamba hoy. (I have a lot of work today.)"),
                     SlangCard(term: "Estar en la luna", pronunciation: "Es-tar en la loo-nah", meaning: "To be spaced out", example: "Hoy en clase estaba en la luna. (I was spaced out in class today.)"),
                     SlangCard(term: "Pana", pronunciation: "Pah-nah", meaning: "Friend, buddy (Venezuela)", example: "Ese pana siempre me ayuda. (That buddy always helps me.)"),
                     SlangCard(term: "Hacer la vista gorda", pronunciation: "Ah-ser lah vees-tah gor-dah", meaning: "Turn a blind eye", example: "El profe hizo la vista gorda con la tarea. (The teacher turned a blind eye to the homework.)")
                 ]),
-//            LanguageDeck(
-//                language: "Japanese",
-//                flagEmoji: "🇯🇵",
-//                cards: [
-//                    SlangCard(term: "やばい", pronunciation: "Yabai", meaning: "Amazing, dangerous, or crazy", example: "このラーメン、やばいほど美味しい！ (This ramen is insanely good!)"),
-//                    SlangCard(term: "ウザい", pronunciation: "Uzai", meaning: "Annoying", example: "あいつ、マジでウザい！ (That guy is seriously annoying!)"),
-//                    SlangCard(term: "ガチ", pronunciation: "Gachi", meaning: "Serious, legit", example: "ガチで勉強しないとやばい！ (I seriously need to study!)"),
-//                    SlangCard(term: "キモい", pronunciation: "Kimoi", meaning: "Gross, creepy", example: "あの虫、キモい！ (That bug is gross!)"),
-//                    SlangCard(term: "テンション上がる", pronunciation: "Tenshon agaru", meaning: "Get hyped/excited", example: "この曲聞くとテンション上がる！ (This song gets me hyped!)"),
-//                    SlangCard(term: "バカ", pronunciation: "Baka", meaning: "Idiot, fool", example: "なんでそんなことするの？バカじゃない？ (Why would you do that? Are you an idiot?)"),
-//                    SlangCard(term: "ノリノリ", pronunciation: "Nori-nori", meaning: "Super enthusiastic", example: "彼、パーティーでノリノリだったよ！ (He was super into the party!)"),
-//                    SlangCard(term: "ダサい", pronunciation: "Dasai", meaning: "Uncool, lame", example: "その服、ちょっとダサくない？ (Aren’t those clothes a bit uncool?)"),
-//                    SlangCard(term: "エモい", pronunciation: "Emoi", meaning: "Emotional, nostalgic", example: "この映画、エモいわ... (This movie is so emotional...)"),
-//                    SlangCard(term: "マジ", pronunciation: "Maji", meaning: "Seriously", example: "マジで！？信じられない！ (Seriously!? I can't believe it!)")
-//                ])
+            LanguageDeck(
+                language: "English",
+                flagEmoji: "🇺🇸",
+                cards: [
+                    SlangCard(
+                        term: "Yapper",
+                        pronunciation: "yap-er",
+                        meaning: "person who talks a lot",
+                        example: "Stop yapping and get to work!",
+                        translations: [
+                            "Korean": "마구 떠들다 / 수다쟁이",
+                            "Chinese": "说个不停 / 话多的人",
+                            "Spanish": "Persona habladora"
+                        ]
+                    ),
+                    SlangCard(
+                        term: "Slay",
+                        pronunciation: "slay",
+                        meaning: "To do something exceptionally well",
+                        example: "Her presentation absolutely slayed!",
+                        translations: [
+                            "Korean": "완전 멋지게 해내다",
+                            "Chinese": "太棒了",
+                            "Spanish": "Arrasar, hacerlo increíblemente bien"
+                        ]
+                    ),
+                    SlangCard(
+                        term: "Cooked",
+                        pronunciation: "cooked",
+                        meaning: "Exhausted, burnt out, or in a bad situation",
+                        example: "After that exam, I'm completely cooked.",
+                        translations: [
+                            "Korean": "완전 지치다, 망하다",
+                            "Chinese": "精疲力尽, 筋疲力尽",
+                            "Spanish": "Agotado, acabado, en mala situación"
+                        ]
+                    ),
+                    SlangCard(
+                        term: "It's over for me",
+                        pronunciation: "its oh-ver for me",
+                        meaning: "being in a troubled or challenging situation",
+                        example: "I forgot to submit my assignment. It's over for me!",
+                        translations: [
+                            "Korean": "난 끝났어, 이제 망했어",
+                            "Chinese": "你情况太糟了",
+                            "Spanish": "Estoy acabado, no tengo salvación"
+                        ]
+                    ),
+                    SlangCard(
+                        term: "Let him cook",
+                        pronunciation: "let him cook",
+                        meaning: "Allow someone to perform without interruption they're about to do a good job",
+                        example: "Don't rush him, let him cook and you'll see amazing results.",
+                        translations: [
+                            "Korean": "방해하지 말고 지켜봐, 곧 멋진 결과를 보여줄 거야",
+                            "Chinese": "要有耐心，他会变得很棒",
+                            "Spanish": "Déjalo trabajar, está a punto de hacer algo increíble"
+                        ]
+                    ),
+                    SlangCard(
+                        term: "Rizz",
+                        pronunciation: "rizz",
+                        meaning: "Charisma or charm, in the context of attracting a romantic partner",
+                        example: "That guy has serious rizz, he gets all the dates.",
+                        translations: [
+                            "Korean": "매력, 끌어당기는 힘",
+                            "Chinese": "性张力, 有魅力的",
+                            "Spanish": "Carisma, encanto para atraer parejas"
+                        ]
+                    ),
+                    SlangCard(
+                        term: "I Can't Lie",
+                        pronunciation: "i cant lie",
+                        meaning: "emphasize honesty or truthfulness",
+                        example: "ICL, that movie was actually really good.",
+                        translations: [
+                            "Korean": "솔직히 말해서",
+                            "Chinese": "说实话",
+                            "Spanish": "No voy a mentir"
+                        ]
+                    ),
+
+                    SlangCard(
+                        term: "Piss Me Off",
+                        pronunciation: "piss me off",
+                        meaning: "express annoyance or frustration",
+                        example: "That slow internet really PMO.",
+                        translations: [
+                            "Korean": "짜증나게 하다",
+                            "Chinese": "让我生气",
+                            "Spanish": "Me molesta mucho"
+                        ]
+                    ),
+
+                    SlangCard(
+                        term: "Locked in",
+                        pronunciation: "locked in",
+                        meaning: "Completely focused on a task, highly concentrated",
+                        example: "Don't disturb her, she's locked in on finishing this project.",
+                        translations: [
+                            "Korean": "완전히 집중하다, 몰입하다",
+                            "Chinese": "全神贯注, 专心致志",
+                            "Spanish": "Completamente concentrado, enfocado"
+                        ]
+                    ),
+                    SlangCard(
+                        term: "Crashing out",
+                        pronunciation: "crash-ing out",
+                        meaning: "Having a breakdown, worrying excessively",
+                        example: "She's crashing out over her final exams.",
+                        translations: [
+                            "Korean": "무너지다, 심하게 걱정하다",
+                            "Chinese": "崩溃, 过度担忧",
+                            "Spanish": "Tener una crisis, preocuparse excesivamente"
+                        ]
+                    ),
+                    SlangCard(
+                        term: "Tweaking",
+                        pronunciation: "twee-king",
+                        meaning: "Acting slightly strange, confused, or worried; being on edge",
+                        example: "Why are you tweaking? It's just a small test.",
+                        translations: [
+                            "Korean": "약간 불안해하다, 초조해하다",
+                            "Chinese": "神经紧张, 焦虑不安",
+                            "Spanish": "Actuar de forma extraña, estar nervioso"
+                        ]
+                    ),
+                    SlangCard(
+                        term: "Don't cry over spilled milk",
+                        pronunciation: "dont cry oh-ver spilled milk",
+                        meaning: "Don't worry about things that have already happened",
+                        example: "You lost the game, but don't cry over spilled milk. Focus on the next one.",
+                        translations: [
+                            "Korean": "이미 지난 일에 연연하지 마라",
+                            "Chinese": "不要为已经发生的事而懊恼",
+                            "Spanish": "No llores por la leche derramada (no te lamentes por lo que ya pasó)"
+                        ]
+                    ),
+                
+                    SlangCard(
+                        term: "Spill the tea",
+                        pronunciation: "spill the tee",
+                        meaning: "To share gossip or reveal secrets",
+                        example: "Come on, spill the tea about your date last night!",
+                        translations: [
+                            "Korean": "가십이나 비밀을 폭로하다",
+                            "Chinese": "爆料, 分享八卦",
+                            "Spanish": "Contar el chisme, revelar secretos"
+                        ]
+                    ),
+                    SlangCard(
+                        term: "Cat's out of the bag",
+                        pronunciation: "cats out of the bag",
+                        meaning: "A secret has been revealed or exposed",
+                        example: "Well, the cat's out of the bag now that everyone knows about the surprise party.",
+                        translations: [
+                            "Korean": "비밀이 드러나다",
+                            "Chinese": "秘密已经泄露",
+                            "Spanish": "Se destapó el secreto, se descubrió la verdad"
+                        ]
+                    ),
+                    
+                    SlangCard(
+                        term: "In the nick of time",
+                        pronunciation: "in the nick of time",
+                        meaning: "At the last possible moment, just in time",
+                        example: "The ambulance arrived in the nick of time to save her life.",
+                        translations: [
+                            "Korean": "아슬아슬하게 제시간에",
+                            "Chinese": "在最后一刻, 恰好及时",
+                            "Spanish": "Justo a tiempo, en el último momento"
+                        ]
+                    ),
+                    SlangCard(
+                        term: "It's not rocket science",
+                        pronunciation: "its not rock-et sy-ence",
+                        meaning: "Something is not complicated",
+                        example: "Setting up this app is not rocket science, just follow the instructions.",
+                        translations: [
+                            "Korean": "그렇게 어려운 일이 아니다",
+                            "Chinese": "这又不是什么难事",
+                            "Spanish": "No es nada del otro mundo, no es tan difícil"
+                        ]
+                    ),
+                    SlangCard(
+                        term: "Cut to the chase",
+                        pronunciation: "cut to the chase",
+                        meaning: "Get to the point without wasting time on unnecessary details",
+                        example: "Let's cut to the chase: are you interested in the job or not?",
+                        translations: [
+                            "Korean": "핵심으로 바로 들어가다",
+                            "Chinese": "开门见山, 直奔主题",
+                            "Spanish": "Ir al grano, no andarse con rodeos"
+                        ]
+                    )
+                ]),
         ]
         
         setupSpeechRecognition()
