@@ -669,7 +669,7 @@ class FlashcardGameViewModel: ObservableObject {
 
     func speakPronunciation() {
         let language = currentDeck.language
-        var textToSpeak = currentCard.term
+        let textToSpeak = currentCard.term
         let utterance = AVSpeechUtterance(string: textToSpeak)
         
         switch language {

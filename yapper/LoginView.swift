@@ -96,12 +96,13 @@ struct LoginView: View {
                     Spacer()
                 }
                 .padding(.top, 50)
-                .onChange(of: viewModel.isLoggedIn) { isLoggedIn in
-                    if isLoggedIn {
+                .onChange(of: viewModel.isLoggedIn) { oldValue, newValue in
+                    if newValue {
                         navigateToContentView = true
                     }
                 }
                 .padding(.bottom, keyboardHeight)
+
             }
             .onAppear {
                 NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main) { notification in
@@ -113,10 +114,16 @@ struct LoginView: View {
                     keyboardHeight = 0
                 }
             }
-            // Automatically navigate to ContentView once logged in
-            NavigationLink(destination: ContentView(), isActive: $viewModel.isLoggedIn) {
+            NavigationStack {
+                // Your main view content goes here
+
+                // This triggers the navigation
                 EmptyView()
+                    .navigationDestination(isPresented: $viewModel.isLoggedIn) {
+                        ContentView()
+                    }
             }
+
         }
     }
 }

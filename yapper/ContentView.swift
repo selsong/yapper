@@ -67,10 +67,18 @@ struct ContentView: View {
             }
             .navigationBarTitle("Slang Flashcards", displayMode: .inline)
             .navigationBarItems(
-                trailing:
-                    NavigationLink(destination: SettingsView()) {
-                        Image(systemName: "gear")
-                            .foregroundColor(.white)
+                trailing: HStack {
+                        // Game button
+                        NavigationLink(destination: GamesView(viewModel: viewModel)) {
+                            Image(systemName: "gamecontroller")
+                                .foregroundColor(.white)
+                        }
+                        
+                        // Settings button (existing)
+                        NavigationLink(destination: SettingsView()) {
+                            Image(systemName: "gear")
+                                .foregroundColor(.white)
+                        }
                     }
             )
         }
@@ -84,8 +92,6 @@ struct DeckSelectionView: View {
     @ObservedObject var viewModel: FlashcardGameViewModel
     @Binding var showOnboarding: Bool
     @Binding var selectedDeck: LanguageDeck?
-    
-
     
     var body: some View {
         VStack {
