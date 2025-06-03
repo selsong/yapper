@@ -181,116 +181,118 @@ struct TabooGameView: View {
 // Taboo Game Playing View
 struct TabooGamePlayingView: View {
     @ObservedObject var gameViewModel: TabooGameViewModel
+    @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
-        GeometryReader { geometry in
-            HStack(spacing: 0) {
-                // Left side - Target Word
-                VStack {
-                    Text("Target Word")
-                        .font(.headline)
-                        .foregroundColor(.white.opacity(0.8))
-                        .padding(.bottom, 20)
+        ZStack {
+            GeometryReader { geometry in
+                HStack(spacing: 0) {
+                    // Left side - Target Word
+                    VStack(alignment: .leading) {
+                        Text("Target Word")
+                            .font(.headline)
+                            .foregroundColor(.white.opacity(0.8))
+                            .padding(.top, 80)
+                            .padding(.bottom, 20)
+                        
+                        Text(gameViewModel.currentCard?.term ?? "")
+                            .font(.system(size: 36, weight: .bold))
+                            .foregroundColor(.white)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                            .frame(maxWidth: .infinity)
+                        
+                        VStack {
+                            // Empty space to push content up
+                        }
+                        .frame(maxHeight: .infinity)
+                    }
+                    .frame(width: geometry.size.width * 0.5)
                     
-                    Text(gameViewModel.currentCard?.term ?? "")
-                        .font(.system(size: 36, weight: .bold))
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.center)
+                    // Divider
+                    Rectangle()
+                        .fill(Color.white.opacity(0.3))
+                        .frame(width: 2)
+                    
+                    // Right side - Taboo Words
+                    VStack(alignment: .leading) {
+                        Text("Forbidden Words")
+                            .font(.headline)
+                            .foregroundColor(.red.opacity(0.8))
+                            .padding(.top, 80)
+                            .padding(.bottom, 20)
+                        
+                        VStack(alignment: .leading, spacing: 15) {
+                            ForEach(gameViewModel.tabooWords, id: \.self) { word in
+                                if !word.isEmpty {
+                                    Text(word)
+                                        .font(.title3)
+                                        .foregroundColor(.white)
+                                }
+                            }
+                        }
                         .padding(.horizontal)
+                        
+                        VStack {
+                            // Score positioned at bottom
+                            VStack {
+                                Text("Score")
+                                    .font(.subheadline)
+                                    .foregroundColor(.white.opacity(0.8))
+                                
+                                Text("\(gameViewModel.score)")
+                                    .font(.system(size: 24, weight: .bold))
+                                    .foregroundColor(.green)
+                            }
+                            .frame(maxHeight: .infinity, alignment: .bottom)
+                            .padding(.bottom, 30)
+                        }
+                    }
+                    .frame(width: geometry.size.width * 0.5)
+                }
+            }
+            
+            // Timer at top center
+            VStack {
+                HStack {
+                    // Back button
+                    Button(action: {
+                        gameViewModel.stopGame()
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .font(.title2)
+                            .foregroundColor(.white)
+                            .padding()
+                    }
                     
                     Spacer()
                     
-                    // Timer
+                    // Timer at top center
                     VStack {
                         Text("Time Left")
-                            .font(.subheadline)
+                            .font(.headline)
                             .foregroundColor(.white.opacity(0.8))
                         
                         Text("\(gameViewModel.timeRemaining)")
-                            .font(.system(size: 24, weight: .bold))
+                            .font(.system(size: 48, weight: .bold))
                             .foregroundColor(gameViewModel.timeRemaining <= 10 ? .red : .white)
                     }
-                    .padding(.bottom, 30)
-                }
-                .frame(width: geometry.size.width * 0.5)
-                
-                // Divider
-                Rectangle()
-                    .fill(Color.white.opacity(0.3))
-                    .frame(width: 2)
-                
-                // Right side - Taboo Words
-                VStack {
-                    Text("Forbidden Words")
-                        .font(.headline)
-                        .foregroundColor(.red.opacity(0.8))
-                        .padding(.bottom, 20)
-                    
-                    VStack(alignment: .leading, spacing: 15) {
-                        ForEach(gameViewModel.tabooWords, id: \.self) { word in
-                            HStack {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.red)
-                                
-                                Text(word)
-                                    .font(.title3)
-                                    .foregroundColor(.white)
-                                
-                                Spacer()
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
                     
                     Spacer()
                     
-                    // Score
-                    VStack {
-                        Text("Score")
-                            .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.8))
-                        
-                        Text("\(gameViewModel.score)")
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundColor(.green)
-                    }
-                    .padding(.bottom, 30)
+                    // Empty space to balance the back button
+                    Color.clear
+                        .frame(width: 60, height: 60)
                 }
-                .frame(width: geometry.size.width * 0.5)
+                .padding(.top, 20)
+                
+                Spacer()
             }
         }
         .overlay(
-            VStack {
-                HStack {
-                    Spacer()
-                    
-                    VStack {
-                        Image(systemName: "phone.arrow.up.right")
-                            .font(.title2)
-                            .foregroundColor(.orange)
-                        Text("Tilt UP to Skip")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.8))
-                    }
-                }
-                
-                Spacer()
-                
-                HStack {
-                    VStack {
-                        Image(systemName: "phone.down.fill")
-                            .font(.title2)
-                            .foregroundColor(.green)
-                        Text("Tilt DOWN for Correct")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.8))
-                    }
-                    
-                    Spacer()
-                }
-            }
-            .padding(),
-            alignment: .topTrailing
+            // Instructions overlay removed - no more tilt icons
+            EmptyView()
         )
     }
 }
@@ -415,14 +417,14 @@ class TabooGameViewModel: ObservableObject {
             
             // Increased sensitivity thresholds - requires stronger tilt
             // Tilt down (towards floor) - Correct
-            if roll < -1.6 {
-                print("📱 Tilt DOWN detected - roll: \(roll)")
+            if roll < -1.8 {
+                print("Tilt DOWN detected - roll: \(roll)")
                 self.lastTiltTime = now
                 self.handleCorrect()
             }
             // Tilt up (towards ceiling) - Skip
-            else if roll > 1.6 {
-                print("📱 Tilt UP detected - roll: \(roll)")
+            else if roll > 0.8 {
+                print("Tilt UP detected - roll: \(roll)")
                 self.lastTiltTime = now
                 self.handleSkip()
             }
@@ -465,25 +467,24 @@ class TabooGameViewModel: ObservableObject {
         // Extract words from the meaning and example to create taboo words
         let meaningWords = extractSignificantWords(from: card.meaning)
         let exampleWords = extractSignificantWords(from: card.example)
-        let pronunciationWords = extractSignificantWords(from: card.pronunciation)
         
-        var allPotentialWords = Set(meaningWords + exampleWords + pronunciationWords)
+        var allPotentialWords = Set(meaningWords + exampleWords)
         
         // Remove the target word itself
         allPotentialWords.remove(card.term.lowercased())
         
-        // Convert to array and take first 4, or pad with generic words if needed
-        var tabooWordsArray = Array(allPotentialWords).prefix(4).map { $0.capitalized }
+        // Convert to array and take first 4
+        var tabooWordsArray = Array(allPotentialWords).prefix(4).map { $0 }
         
-        // If we don't have enough words, add some generic ones
-        let genericTabooWords = ["word", "thing", "say", "like", "use", "good", "bad", "very", "really", "just"]
-        for genericWord in genericTabooWords {
-            if tabooWordsArray.count < 4 && !tabooWordsArray.contains(genericWord.capitalized) {
-                tabooWordsArray.append(genericWord.capitalized)
-            }
+        // If we don't have enough words from the card content, keep what we have
+        // This ensures taboo words are in the same language as the flashcard content
+        tabooWords = Array(tabooWordsArray)
+        
+        // Pad with empty strings if we have fewer than 4 words to maintain layout
+        while tabooWords.count < 4 {
+            tabooWords.append("")
         }
         
-        tabooWords = Array(tabooWordsArray.prefix(4))
         print("🚫 Generated taboo words: \(tabooWords)")
     }
     
