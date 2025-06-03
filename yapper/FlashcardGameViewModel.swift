@@ -57,7 +57,43 @@ class FlashcardGameViewModel: ObservableObject {
                     SlangCard(term: "헐", pronunciation: "Heol", meaning: "OMG! Very surprising moment", example: "헐! 정말? (OMG! Really?)"),
                     SlangCard(term: "짱", pronunciation: "Jjang", meaning: "The best", example: "너 정말 짱이야! (You're the best!)"),
                     SlangCard(term: "대박사건", pronunciation: "Daebak-sageon", meaning: "Big deal/huge event", example: "어제 대박사건이 있었어 (There was a huge event yesterday)"),
-                    SlangCard(term: "억울해", pronunciation: "Eok-ul-hae", meaning: "It's unfair/I feel wronged", example: "정말 억울해! (It's so unfair!)")
+                    SlangCard(term: "억울해", pronunciation: "Eok-ul-hae", meaning: "It's unfair/I feel wronged", example: "정말 억울해! (It's so unfair!)"),
+                    
+                    SlangCard(
+                        term: "베프",
+                        pronunciation: "be-peu",
+                        meaning: "Best friend; BFF",
+                        example: "그녀는 내 베프야. (She's my best friend.)"
+                    ),
+
+                    SlangCard(
+                        term: "남친",
+                        pronunciation: "nam-chin",
+                        meaning: "Boyfriend",
+                        example: "남친이랑 영화 봤어. (I watched a movie with my boyfriend.)"
+                    ),
+
+                    SlangCard(
+                        term: "여친",
+                        pronunciation: "yeo-chin",
+                        meaning: "Girlfriend",
+                        example: "여친이랑 데이트했어. (I went on a date with my girlfriend.)"
+                    ),
+
+                    SlangCard(
+                        term: "몸짱",
+                        pronunciation: "mom-jjang",
+                        meaning: "Great body; fit person",
+                        example: "그는 진짜 몸짱이야. (He's really fit.)"
+                    ),
+
+                    SlangCard(
+                        term: "현웃",
+                        pronunciation: "hyeon-ut",
+                        meaning: "Laughing out loud in real life",
+                        example: "그 이야기 듣고 현웃 터졌어. (I burst out laughing at that story.)"
+                    )
+
                 ]),
             LanguageDeck(
                 language: "Chinese",
@@ -80,7 +116,22 @@ class FlashcardGameViewModel: ObservableObject {
                     SlangCard(term: "笔芯", pronunciation: "bǐ xīn", meaning: "Love you", example: "A cute way of saying 'love you' (sounds like 'bless you')"),
                     SlangCard(term: "太可了", pronunciation: "tài kě le", meaning: "Super cute", example: "This outfit is 太可了!"),
                     SlangCard(term: "绝绝子", pronunciation: "jué jué zi", meaning: "Absolutely amazing", example: "This restaurant is 绝绝子!"),
-                    SlangCard(term: "无缘无故", pronunciation: "wú yuán wú gù", meaning: "for no reason", example: "Why are you 无缘无故 (ignoring me) 不理我 ?")
+                    SlangCard(term: "无缘无故", pronunciation: "wú yuán wú gù", meaning: "for no reason", example: "Why are you 无缘无故 (ignoring me) 不理我 ?"),
+                    
+                    SlangCard(
+                        term: "你说得对",
+                        pronunciation: "nǐ shuō de duì",
+                        meaning: "You're right",
+                        example: "你说得对，这个观点很有道理。(You're right, that's a valid point.)"
+                    ),
+
+                    
+                    SlangCard(
+                        term: "笑死我了",
+                        pronunciation: "xiào sǐ wǒ le",
+                        meaning: "Laughing to death; LOL",
+                        example: "这个视频太搞笑了，笑死我了！(This video is so funny, LOL!)"
+                    )
                 ]),
             
             LanguageDeck(
@@ -100,7 +151,48 @@ class FlashcardGameViewModel: ObservableObject {
                     SlangCard(term: "Chamba", pronunciation: "Chahm-bah", meaning: "Job, work (Latin America)", example: "Tengo mucha chamba hoy. (I have a lot of work today.)"),
                     SlangCard(term: "Estar en la luna", pronunciation: "Es-tar en la loo-nah", meaning: "To be spaced out", example: "Hoy en clase estaba en la luna. (I was spaced out in class today.)"),
                     SlangCard(term: "Pana", pronunciation: "Pah-nah", meaning: "Friend, buddy (Venezuela)", example: "Ese pana siempre me ayuda. (That buddy always helps me.)"),
-                    SlangCard(term: "Hacer la vista gorda", pronunciation: "Ah-ser lah vees-tah gor-dah", meaning: "Turn a blind eye", example: "El profe hizo la vista gorda con la tarea. (The teacher turned a blind eye to the homework.)")
+                    SlangCard(term: "Hacer la vista gorda", pronunciation: "Ah-ser lah vees-tah gor-dah", meaning: "Turn a blind eye", example: "El profe hizo la vista gorda con la tarea. (The teacher turned a blind eye to the homework.)"),
+                    
+                    SlangCard(term: "Qué fuerte",
+                              pronunciation: "keh fwer-teh",
+                              meaning: "That's wild / unbelievable",
+                              example: "¡Qué fuerte lo que le pasó! (That's wild, what happened to her!)"),
+
+                    SlangCard(term: "Estoy living",
+                              pronunciation: "es-toy lee-ving",
+                              meaning: "I'm obsessed / I love it (Spanglish, Argentina)",
+                              example: "¡Mirá ese look, estoy living! (Look at that outfit, I’m obsessed!)"),
+
+                    SlangCard(term: "Tirar la onda",
+                              pronunciation: "tee-rar lah on-dah",
+                              meaning: "To flirt with someone (Mexico)",
+                              example: "Creo que me está tirando la onda. (I think they’re flirting with me.)"),
+
+                    SlangCard(term: "Estar rayado",
+                              pronunciation: "es-tar rah-yah-doh",
+                              meaning: "To be obsessed or stuck on something (Spain)",
+                              example: "Está rayado con esa canción. (He's obsessed with that song.)"),
+
+                    SlangCard(term: "Dar palo",
+                              pronunciation: "dahr pah-lo",
+                              meaning: "To roast or criticize someone harshly (Caribbean)",
+                              example: "En los comentarios le están dando palo. (They’re roasting him in the comments.)"),
+
+                    SlangCard(term: "Ni en pedo",
+                              pronunciation: "nee en peh-doh",
+                              meaning: "No way / Not even drunk would I (Argentina)",
+                              example: "¿Te tirarías en paracaídas? — ¡Ni en pedo! (Would you skydive? — No way!)"),
+
+                    SlangCard(term: "Qué chimba",
+                              pronunciation: "keh cheem-bah",
+                              meaning: "How cool! / That’s awesome! (Colombia)",
+                              example: "¡Esa fiesta estuvo muy chimba! (That party was so cool!)"),
+
+                    SlangCard(term: "Estar hecho leña",
+                              pronunciation: "es-tar eh-cho lehn-yah",
+                              meaning: "To be totally exhausted (Latin America)",
+                              example: "Después del trabajo, estoy hecho leña. (After work, I’m totally wrecked.)")
+
                 ]),
             LanguageDeck(
                 language: "English",
@@ -185,10 +277,10 @@ class FlashcardGameViewModel: ObservableObject {
                     ),
 
                     SlangCard(
-                        term: "Piss Me Off",
+                        term: "Piss Me Off (PMO)",
                         pronunciation: "piss me off",
                         meaning: "express annoyance or frustration",
-                        example: "That slow internet really PMO.",
+                        example: "The wifi here never works! ts pmo. ",
                         translations: [
                             "Korean": "짜증나게 하다",
                             "Chinese": "让我生气",
@@ -252,6 +344,116 @@ class FlashcardGameViewModel: ObservableObject {
                             "Spanish": "Contar el chisme, revelar secretos"
                         ]
                     ),
+                    
+                    SlangCard(
+                        term: "Imma keep it a buck",
+                        pronunciation: "I'm-uh keep it uh buck",
+                        meaning: "To be completely honest; to tell the truth directly",
+                        example: "Imma keep it a buck — that outfit ain't it.",
+                        translations: [
+                            "Korean": "진짜 솔직히 말해서",
+                            "Chinese": "老实说，实话实说",
+                            "Spanish": "Voy a ser 100% honesto/a"
+                        ]
+                    ),
+
+                    SlangCard(
+                        term: "Period",
+                        pronunciation: "peer-ee-uhd",
+                        meaning: "Used to emphasize that something is final or undeniable; end of discussion",
+                        example: "She’s the best dancer in the crew. Period.",
+                        translations: [
+                            "Korean": "끝. 더 이상 말할 필요 없어",
+                            "Chinese": "就是这样，没什么好说的了",
+                            "Spanish": "Punto final, no hay más que decir"
+                        ]
+                    ),
+                    
+                    SlangCard(
+                        term: "No cap",
+                        pronunciation: "noh cap",
+                        meaning: "For real; no lie; being completely honest",
+                        example: "That movie was amazing, no cap.",
+                        translations: [
+                            "Korean": "진심이야, 거짓말 아님",
+                            "Chinese": "真的，不骗你",
+                            "Spanish": "De verdad, sin mentiras"
+                        ]
+                    ),
+
+                    SlangCard(
+                        term: "Say less",
+                        pronunciation: "say less",
+                        meaning: "Understood; got it; no need to explain further",
+                        example: "You want to hang out at 8? Say less, I’ll be there.",
+                        translations: [
+                            "Korean": "말 안 해도 알아, 바로 이해했어",
+                            "Chinese": "不用多说，我懂了",
+                            "Spanish": "Entendido, no hace falta explicar más"
+                        ]
+                    ),
+
+                    SlangCard(
+                        term: "It’s giving...",
+                        pronunciation: "its giv-ing",
+                        meaning: "Used to describe the vibe or energy something gives off",
+                        example: "It’s giving main character energy.",
+                        translations: [
+                            "Korean": "느낌이 딱 그래, 그런 분위기야",
+                            "Chinese": "感觉就是..., 给人这种氛围",
+                            "Spanish": "Da la vibra de..., transmite eso"
+                        ]
+                    ),
+
+                    SlangCard(
+                        term: "Mid",
+                        pronunciation: "mid",
+                        meaning: "Mediocre or average, not impressive",
+                        example: "That album was mid — not worth the hype.",
+                        translations: [
+                            "Korean": "그저 그래, 별로야",
+                            "Chinese": "一般般，没什么特别的",
+                            "Spanish": "Regular, nada impresionante"
+                        ]
+                    ),
+
+                    SlangCard(
+                        term: "Bet",
+                        pronunciation: "bet",
+                        meaning: "Okay, cool, I agree or I’m in",
+                        example: "You down to play tonight? — Bet.",
+                        translations: [
+                            "Korean": "좋아, 콜",
+                            "Chinese": "好的, 没问题",
+                            "Spanish": "Listo, cuenta conmigo"
+                        ]
+                    ),
+
+
+                    SlangCard(
+                        term: "Built different",
+                        pronunciation: "built dif-fer-ent",
+                        meaning: "Exceptionally talented or unique; not ordinary",
+                        example: "She ran a marathon with no training — she’s built different.",
+                        translations: [
+                            "Korean": "완전 남다른 사람",
+                            "Chinese": "他就是不一样，超强",
+                            "Spanish": "Está hecho diferente, es increíble"
+                        ]
+                    ),
+
+                    SlangCard(
+                        term: "Cracked",
+                        pronunciation: "krakt",
+                        meaning: "Extremely skilled or insanely good at something (often in gaming)",
+                        example: "He’s so cracked at chess that no one can beat him.",
+                        translations: [
+                            "Korean": "완전 고수야, 미쳤다 (특히 게임에서)",
+                            "Chinese": "太强了，大神级别（多用于游戏）",
+                            "Spanish": "Está rotísimo, es una bestia (especialmente en juegos)"
+                        ]
+                    ),
+
                     SlangCard(
                         term: "Cat's out of the bag",
                         pronunciation: "cats out of the bag",
